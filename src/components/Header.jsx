@@ -77,13 +77,6 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
         >
           Portada
         </span>
-        <span 
-          className={`nav-item ${activeCategory === 'NUESTRO EQUIPO' ? 'active' : ''}`}
-          onClick={() => setActiveCategory('NUESTRO EQUIPO')}
-          style={{fontWeight: 800, color: 'var(--accent)'}}
-        >
-          NUESTRO EQUIPO
-        </span>
         {categories.map(cat => (
           <span 
             key={cat} 
@@ -93,6 +86,30 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
             {cat}
           </span>
         ))}
+        
+        <span 
+          className={`nav-item ${activeCategory === 'NUESTRO EQUIPO' ? 'active' : ''}`}
+          onClick={() => setActiveCategory('NUESTRO EQUIPO')}
+          style={{
+             marginLeft: '1rem',
+             background: activeCategory === 'NUESTRO EQUIPO' ? 'var(--text-main)' : 'transparent',
+             color: activeCategory === 'NUESTRO EQUIPO' ? 'var(--bg-color)' : 'var(--text-main)',
+             border: '1.5px solid var(--text-main)',
+             borderRadius: '20px',
+             padding: '0.2rem 0.8rem',
+             fontWeight: 800,
+             fontSize: '0.85rem',
+             display: 'flex',
+             alignItems: 'center',
+             gap: '0.4rem',
+             transition: 'all 0.2s'
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{marginBottom: '-1px'}}>
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          NUESTRO EQUIPO
+        </span>
       </nav>
     </header>
   );
