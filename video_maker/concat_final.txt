@@ -1,3 +1,0 @@
-file 'part1_mixed.mp4'
-file 'norm_10.mp4'
-file 'norm_11.mp4'
