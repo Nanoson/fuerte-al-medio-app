@@ -162,15 +162,16 @@ function App() {
   const renderFeed = () => {
     const isForeign = (cat) => ['Internacional', 'Deportes', 'Espectáculos', 'Mercados'].includes(cat);
 
-    // Ignorar el filtro estricto de fechas y usar las notas maestras.
-    const top15 = sortedNews.slice(0, 15);
-    const theRest = sortedNews.slice(15);
+    // Separación geográfica previa a la partición asimétrica
+    const locals = sortedNews.filter(a => !isForeign(a.category));
+    const foreigners = sortedNews.filter(a => isForeign(a.category));
 
-    const localTop = top15.filter(a => !isForeign(a.category));
-    const foreignTop = top15.filter(a => isForeign(a.category));
+    // Balanceo Independiente: Extraer aprox 7-8 de cada lado para emparejar la altura vertical del divisor final.
+    const localTop = locals.slice(0, 8);
+    const foreignTop = foreigners.slice(0, 8);
 
-    const localRest = theRest.filter(a => !isForeign(a.category));
-    const foreignRest = theRest.filter(a => isForeign(a.category));
+    const localRest = locals.slice(8);
+    const foreignRest = foreigners.slice(8);
 
     if (activeCategory) {
        return (
