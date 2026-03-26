@@ -53,6 +53,20 @@ function App() {
   const [news, setNews] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('fuerte-theme');
+      if (savedTheme) return savedTheme === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('fuerte-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const fetchNews = () => {
@@ -274,6 +288,8 @@ function App() {
         activeCategory={activeCategory} 
         setActiveCategory={handleCategorySelect}
         onHome={handleHomeClick}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
       />
       
       {!selectedArticle && (

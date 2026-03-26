@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Header = ({ activeCategory, setActiveCategory, onHome }) => {
+const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDarkMode }) => {
   const [weather, setWeather] = useState({ temp: '--', condition: '' });
 
   useEffect(() => {
@@ -28,9 +28,30 @@ const Header = ({ activeCategory, setActiveCategory, onHome }) => {
 
   return (
     <header className="site-header">
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.08)', paddingBottom: '0.8rem', marginBottom: '1.5rem'}}>
-          <span style={{fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600}}>{displayDate}</span>
-          <span style={{fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600}}>📍 Buenos Aires | ⛅ {weather.temp}{weather.condition}</span>
+      <div className="header-top-bar">
+          <span className="header-meta-text">{displayDate}</span>
+          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+              <span className="header-meta-text">📍 Buenos Aires | ⛅ {weather.temp}{weather.condition}</span>
+              <button 
+                  onClick={() => setIsDarkMode(!isDarkMode)} 
+                  title={isDarkMode ? "Activar Modo Diurno" : "Activar Modo Nocturno"}
+                  style={{
+                    background: 'var(--card-bg)', 
+                    color: 'var(--text-main)',
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '20px', 
+                    cursor: 'pointer', 
+                    fontSize: '1.1rem', 
+                    padding: '0.2rem 0.6rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    transition: 'all 0.2s',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  }}
+              >
+                  {isDarkMode ? '☀️' : '🌙'}
+              </button>
+          </div>
       </div>
 
       <h1 className="brand-name" onClick={onHome} style={{cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
