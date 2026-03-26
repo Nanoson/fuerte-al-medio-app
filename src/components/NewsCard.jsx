@@ -23,6 +23,29 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       setVotesSum(Number(article.userVotesSum) || 0);
   }, [article.userVotesCount, article.userVotesSum]);
 
+  // Telemetría de Tiempo de Lectura y Vistas
+  useEffect(() => {
+      if (!isFullView) return; // Solo rastrear en vista expandida
+      
+      const startTime = Date.now();
+      let isTracking = true;
+
+      return () => {
+          if (isTracking) {
+              const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+              // Pings a DB solo si leyó más de 2 segundos
+              if (timeSpent > 2) {
+                  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+                  fetch(`${API_BASE}/api/track`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ type: 'article_view', articleId: article.id, timeSpent })
+                  }).catch(err => console.error("Telemetry failed:", err));
+              }
+          }
+      };
+  }, [isFullView, article.id]);
+
   const [comments, setComments] = useState(article.comments || []);
   const [nameInput, setNameInput] = useState('');
   const [textInput, setTextInput] = useState('');

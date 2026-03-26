@@ -90,6 +90,72 @@ app.post('/api/news/:id/action', async (req, res) => {
 });
 
 // ---------------------------------------------------
+// REST API - ANALÍTICAS & FEEDBACK (FASE 36)
+// ---------------------------------------------------
+app.post('/api/track', async (req, res) => {
+    const { type, articleId, timeSpent, targetId } = req.body;
+    try {
+        if (type === 'article_view' && articleId) {
+            await db.query(`UPDATE articles SET views = COALESCE(views, 0) + 1, reading_time_secs = COALESCE(reading_time_secs, 0) + $1 WHERE id = $2`, [timeSpent || 0, articleId]);
+        } else if (type === 'author_click' && targetId) {
+            await db.query(`INSERT INTO analytics (metric_type, target_id, count) VALUES ('author_click', $1, 1) ON CONFLICT (metric_type, target_id) DO UPDATE SET count = analytics.count + 1`, [targetId]);
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Tracker Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/feedback', async (req, res) => {
+    const { contextId, userName, message } = req.body;
+    try {
+        await db.query(`INSERT INTO feedback (context_id, user_name, message) VALUES ($1, $2, $3)`, [contextId || 'general', userName || 'Anónimo', message]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Feedback Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/dashboard', async (req, res) => {
+    try {
+        const totalArticles = await db.query(`SELECT COUNT(*) as count FROM articles`);
+        const totalViews = await db.query(`SELECT SUM(views) as total FROM articles`);
+        const totalReadTime = await db.query(`SELECT SUM(reading_time_secs) as total FROM articles`);
+        const totalVotes = await db.query(`SELECT SUM(userVotesCount) as total FROM articles`);
+        
+        const topArticles = await db.query(`SELECT id, title, views, category FROM articles ORDER BY views DESC LIMIT 6`);
+        const topAuthors = await db.query(`SELECT target_id, count FROM analytics WHERE metric_type = 'author_click' ORDER BY count DESC LIMIT 6`);
+        const recentFeedback = await db.query(`SELECT id, context_id, user_name, message, created_at FROM feedback ORDER BY created_at DESC LIMIT 10`);
+        
+        // Sumar todos los comentarios extraídos de la columna JSON (Estimación vía longitud string o asumiendo ~1 por entrada)
+        const commentsQuery = await db.query(`SELECT comments FROM articles WHERE comments IS NOT NULL AND comments != '[]'`);
+        let totalComments = 0;
+        commentsQuery.rows.forEach(r => {
+            const arr = typeof r.comments === 'string' ? JSON.parse(r.comments) : (r.comments || []);
+            totalComments += arr.length;
+        });
+
+        res.json({
+            metrics: {
+                articles: parseInt(totalArticles.rows[0].count) || 0,
+                views: parseInt(totalViews.rows[0].total) || 0,
+                readTime: parseInt(totalReadTime.rows[0].total) || 0,
+                votes: parseInt(totalVotes.rows[0].total) || 0,
+                comments: totalComments
+            },
+            topArticles: topArticles.rows,
+            topAuthors: topAuthors.rows,
+            feedback: recentFeedback.rows
+        });
+    } catch (error) {
+        console.error("Dashboard Error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ---------------------------------------------------
 // EL RECOLECTOR (SCRAPER + AI NEUTRALIZER)
 // ---------------------------------------------------
 const runScrapingCycle = async () => {

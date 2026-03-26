@@ -4,6 +4,8 @@ import NewsCard from './components/NewsCard'
 import TeamPage from './components/TeamPage'
 import MarketsWidget from './components/MarketsWidget'
 import AuthorAvatar from './components/AuthorAvatar'
+import FeedbackWidget from './components/FeedbackWidget'
+import Dashboard from './components/Dashboard'
 import { authors } from './data/authors.js'
 
 // ==========================================
@@ -56,6 +58,7 @@ function App() {
   const [news, setNews] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [selectedAuthor, setSelectedAuthor] = useState(null)
+  const [showDashboard, setShowDashboard] = useState(false)
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -138,6 +141,7 @@ function App() {
     setActiveCategory(null);
     setSelectedArticle(null);
     setSelectedAuthor(null);
+    setShowDashboard(false);
     setSearchQuery('');
     window.history.pushState({ activeCategory: null, selectedArticle: null }, '', '/');
   }
@@ -147,7 +151,15 @@ function App() {
     setActiveCategory(null);
     setSearchQuery('');
     setSelectedArticle(null);
+    setShowDashboard(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Telemetría Silenciosa
+    fetch(`${API_BASE}/api/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'author_click', targetId: authorId })
+    }).catch(e => console.error(e));
   };
 
   const searchResults = useMemo(() => {
@@ -349,13 +361,32 @@ function App() {
       )}
       
       <main className="content">
-        {selectedArticle ? renderSingleArticle() : (
+        {showDashboard ? (
+             <Dashboard onBack={() => setShowDashboard(false)} />
+        ) : selectedArticle ? renderSingleArticle() : (
             <>
                 {activeCategory === 'Mercados' && <MarketsWidget />}
                 {(!activeCategory || activeCategory !== 'Mercados' || filteredByCategory.length > 0) ? renderFeed() : null}
             </>
         )}
       </main>
+
+      {/* Botón Oculto de Acceso Admin: Click abajo a la izquierda para el Dashboard */}
+      {!showDashboard && (
+          <div 
+             onClick={() => setShowDashboard(true)} 
+             style={{position: 'fixed', bottom: 0, left: 0, width: '50px', height: '50px', cursor: 'pointer', zIndex: 9999}}
+             title="Secret Admin Panel"
+          />
+      )}
+
+      {/* Widget Global Flotante */}
+      {!showDashboard && (
+          <FeedbackWidget 
+              currentContextId={selectedArticle?.id} 
+              currentContextTitle={selectedArticle?.title} 
+          />
+      )}
     </div>
   )
 }
