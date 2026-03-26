@@ -32,9 +32,9 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
   const renderRadialGauge = () => {
       if (avgScore === null) {
           return (
-              <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', background: '#f8f9fa', padding: '0.6rem 1.2rem', borderRadius: '30px', border: '1px solid #eaeaea'}}>
-                  <span style={{fontSize: '0.85rem', fontWeight: 700, color: '#555'}}>Objetividad:</span>
-                  <span style={{fontSize: '0.85rem', fontWeight: 700, color: '#999'}}>Sin Votos</span>
+              <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--bg-color)', padding: '0.6rem 1.2rem', borderRadius: '30px', border: '1px solid var(--border-color)'}}>
+                  <span style={{fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)'}}>Objetividad:</span>
+                  <span style={{fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)'}}>Sin Votos</span>
               </div>
           );
       }
@@ -43,7 +43,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       const finalNumberColor = `hsl(${Math.max(0, Math.min(120, avgScore * 1.2))}, 85%, 42%)`;
 
       return (
-          <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', background: '#f8f9fa', padding: '0.4rem 1.2rem', borderRadius: '30px', border: '1px solid #eaeaea'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--bg-color)', padding: '0.4rem 1.2rem', borderRadius: '30px', border: '1px solid var(--border-color)'}}>
               <div style={{
                   position: 'relative', width: '50px', height: '50px', borderRadius: '50%',
                   background: `conic-gradient(from 0deg, ${conicColors})`,
@@ -51,11 +51,11 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
               }}>
                   <div style={{
                       position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '50%',
-                      background: `conic-gradient(transparent ${avgScore}%, #e5e7eb ${avgScore}%)`
+                      background: `conic-gradient(transparent ${avgScore}%, var(--border-color) ${avgScore}%)`
                   }}></div>
                   
                   <div style={{
-                      width: '40px', height: '40px', borderRadius: '50%', background: '#f8f9fa',
+                      width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-color)',
                       position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '1rem', fontWeight: 900, color: finalNumberColor
                   }}>
@@ -63,10 +63,10 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                   </div>
               </div>
               <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
-                  <span style={{fontSize: '0.85rem', fontWeight: 800, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                  <span style={{fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
                       OBJETIVIDAD
                   </span>
-                  <span style={{fontSize: '0.68rem', fontWeight: 600, color: '#9ca3af', marginTop: '0.1rem'}}>
+                  <span style={{fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '0.1rem'}}>
                       {avgScore !== null ? `(${votesCount} votos cívicos)` : 'Sin Ponderar'}
                   </span>
               </div>
@@ -209,7 +209,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       {(article.copete || article.Copete) && !isCompact && (
          <p 
             onClick={() => onSelect && onSelect(article)}
-            style={{fontSize: isHero || isFullView ? '1.25rem' : '1.05rem', fontWeight: 600, color: '#333', marginBottom: '1.5rem', lineHeight: '1.5', cursor: !isFullView ? 'pointer' : 'text'}}
+            style={{fontSize: isHero || isFullView ? '1.25rem' : '1.05rem', fontWeight: 600, color: 'var(--text-main)', opacity: '0.85', marginBottom: '1.5rem', lineHeight: '1.5', cursor: !isFullView ? 'pointer' : 'text'}}
          >
              {renderBoldText(article.copete || article.Copete)}
          </p>
