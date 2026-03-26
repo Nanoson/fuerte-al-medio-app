@@ -1,0 +1,114 @@
+[
+  {
+    "id": "valmont_pol",
+    "name": "Sebastián Valmont",
+    "role": "Editorialista de Política y Economía",
+    "avatar": " silhouette_1 ",
+    "bio": "Periodista especializado en macroeconomía y análisis político. Férreo defensor del libre mercado y las libertades individuales, Valmont desmenuza la coyuntura nacional con una mirada crítica hacia el intervencionismo estatal, priorizando siempre los datos fiscales y la integridad institucional."
+  },
+  {
+    "id": "montes_pol",
+    "name": "Lucía Montes",
+    "role": "Cronista de Sociedad y Política",
+    "avatar": " silhouette_2 ",
+    "bio": "Socióloga y periodista de investigación. Montes enfoca su cobertura en el impacto social de las decisiones macroeconómicas, dando voz a las minorías y cuestionando las estructuras de poder tradicionales. Su pluma persigue la justicia social y la equidad retributiva."
+  },
+  {
+    "id": "rossi_pol",
+    "name": "Camila Rossi",
+    "role": "Analista Política de Centro",
+    "avatar": " silhouette_3 ",
+    "bio": "Politóloga con amplia trayectoria en el análisis parlamentario. Rossi se caracteriza por su enfoque pragmático y moderado, huyendo de la polarización extrema. Su objetivo es tender puentes editoriales, enfocándose en la viabilidad política, el consenso y el fortalecimiento democrático."
+  },
+  {
+    "id": "cuesta_pol",
+    "name": "Martín Cuesta",
+    "role": "Redactor Jefe de Política e Internacional",
+    "avatar": " silhouette_4 ",
+    "bio": "Corresponsal de agencias internacionales con más de dos décadas de experiencia. Cuesta representa el periodismo informativo en su estado más puro: riguroso, aséptico y estrictamente descriptivo. Su máxima es que los hechos hablen por sí mismos."
+  },
+  {
+    "id": "santillan_esp",
+    "name": "Fabián Santillán",
+    "role": "Editor de Espectáculos y Farándula",
+    "avatar": " silhouette_5 ",
+    "bio": "Un indiscutido de los pasillos televisivos y teatrales. Santillán conoce los secretos mejor guardados del jet set nacional y los cuenta con una mezcla única de ironía y primicia. Si sucede en el mundo del espectáculo, Fabián lo supo primero."
+  },
+  {
+    "id": "dubois_esp",
+    "name": "Mia Dubois",
+    "role": "Columnista de Cultura Pop y Tendencias",
+    "avatar": " silhouette_6 ",
+    "bio": "Especialista en cultura digital, música urbana y moda. Con una mirada fresca y descontracturada, Dubois conecta a los lectores con las últimas plataformas, virales y corrientes artísticas que dominan la conversación de las nuevas generaciones."
+  },
+  {
+    "id": "ferrero_esp",
+    "name": "Bruno Ferrero",
+    "role": "Crítico de Cine, Teatro y Televisión",
+    "avatar": " silhouette_7 ",
+    "bio": "Conocido por su pluma ácida y su nivel de exigencia implacable. Ferrero analiza la industria cultural sin concesiones ni favoritismos, desnudando las falencias narrativas y premiando únicamente la excelencia artística."
+  },
+  {
+    "id": "lemoine_esp",
+    "name": "Clara Lemoine",
+    "role": "Redactora de Cultura y Espectáculos",
+    "avatar": " silhouette_8 ",
+    "bio": "Periodista de formación clásica dedicada a la cartelera, premiaciones e industria cinematográfica. Lemoine ofrece una cobertura sobria, enfocada íntegramente en la obra artística y los movimientos estructurales de la industria del entretenimiento."
+  },
+  {
+    "id": "vieri_dep",
+    "name": "Héctor \"El Tano\" Vieri",
+    "role": "Columnista de Fútbol y Polémicas",
+    "avatar": " silhouette_9 ",
+    "bio": "Dueño de una prosa volcánica y frontal. El Tano vive y respira el fútbol desde la tribuna, siempre apuntando a la polémica arbitral, el fuego de los vestuarios y la exigencia desmedida. Para él, en el deporte no hay grises."
+  },
+  {
+    "id": "bernal_dep",
+    "name": "Diego Bernal",
+    "role": "Cronista Deportivo",
+    "avatar": " silhouette_10 ",
+    "bio": "Amante de la épica deportiva y las grandes hazañas. Bernal aborda el deporte desde su costado más humano y literario, relatando cada partido como una batalla donde el honor, el sudor y la gloria son los verdaderos protagonistas."
+  },
+  {
+    "id": "fassi_dep",
+    "name": "Andrés Fassi",
+    "role": "Analista Táctico",
+    "avatar": " silhouette_11 ",
+    "bio": "Experto en estadísticas avanzadas y esquemas de juego. Fassi desmitifica el deporte llevando el análisis al terreno de los números, el rendimiento físico y las estrategias de pizarrón, ideal para los lectores más exigentes."
+  },
+  {
+    "id": "conti_dep",
+    "name": "Valeria Conti",
+    "role": "Corresponsal de Deportes",
+    "avatar": " silhouette_12 ",
+    "bio": "Redactora encargada del minuto a minuto, partes médicos y cobertura oficial. Conti entrega la información deportiva en tiempo real, garantizando precisión absoluta en resultados y declaraciones de los protagonistas."
+  },
+  {
+    "id": "pendelton_mer",
+    "name": "Arthur Pendelton",
+    "role": "Analista de Mercados Globales",
+    "avatar": " silhouette_13 ",
+    "bio": "Ex-operador bursátil con años de experiencia en las mesas de dinero de Wall Street. Pendelton decodifica la volatilidad financiera internacional y las tendencias corporativas, traduciendo el complejo idioma de las acciones y los bonos."
+  },
+  {
+    "id": "damico_mer",
+    "name": "Javier D'Amico",
+    "role": "Consultor de Riesgo y Finanzas",
+    "avatar": " silhouette_14 ",
+    "bio": "Conocido por sus proyecciones audaces y su lectura del \"humor social\" inversor. D'Amico combina la psicología del mercado con el contexto político para advertir sobre burbujas y oportunidades de alto riesgo."
+  },
+  {
+    "id": "blanc_mer",
+    "name": "Victoria Blanc",
+    "role": "Especialista en Macroeconomía",
+    "avatar": " silhouette_15 ",
+    "bio": "Su análisis se fundamenta estrictamente en la matemática de los Bancos Centrales. Blanc desarticula las narrativas políticas exponiendo la realidad cruda de la inflación, el PBI y la emisión monetaria mediante el uso intensivo de datos."
+  },
+  {
+    "id": "herrera_mer",
+    "name": "Tomás Herrera",
+    "role": "Redactor Financiero",
+    "avatar": " silhouette_16 ",
+    "bio": "Encargado del cierre de mercados y cotizaciones diarias. Herrera provee el panorama informativo esencial sobre el tipo de cambio, commodities y balances corporativos, sin emitir juicios de valor sobre el rumbo económico."
+  }
+]

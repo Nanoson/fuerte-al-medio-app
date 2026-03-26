@@ -164,13 +164,14 @@ const runScrapingCycle = async () => {
                 if (isMercados) finalNews.category = 'Mercados';
 
                 await db.query(`
-                    INSERT INTO articles (title, category, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalNews.title,
                     finalNews.category,
+                    finalNews.authorId || 'valmont_pol',
                     finalNews.biasNeutralization,
                     new Date().toLocaleDateString('es-AR'),
                     finalNews.summary,
@@ -183,7 +184,7 @@ const runScrapingCycle = async () => {
                     targetCluster.clusterImage || null,
                     finalNews.youtubeQuery || null
                 ]);
-                console.log(`✨ Guardado en PostgreSQL (Score Relevancia: ${new Set(targetCluster.articles.map(a => a.source.name)).size}): "${finalNews.title.substring(0, 40)}..."`);
+                console.log(`✨ Guardado en PostgreSQL [Firma: ${finalNews.authorId}]: "${finalNews.title.substring(0, 40)}..."`);
             }
         } catch (error) {
             console.error(`⚠️ Error neural en cluster ${i}:`, error.message);
