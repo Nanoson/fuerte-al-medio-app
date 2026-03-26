@@ -162,10 +162,15 @@ function App() {
   const renderFeed = () => {
     const isForeign = (cat) => ['Internacional', 'Deportes', 'Espectáculos', 'Mercados'].includes(cat);
 
-    const localDestacadas = destacadasNews.filter(a => !isForeign(a.category));
-    const foreignDestacadas = destacadasNews.filter(a => isForeign(a.category));
-    const localOtras = otrasNews.filter(a => !isForeign(a.category));
-    const foreignOtras = otrasNews.filter(a => isForeign(a.category));
+    // Ignorar el filtro estricto de fechas y usar las notas maestras.
+    const top15 = sortedNews.slice(0, 15);
+    const theRest = sortedNews.slice(15);
+
+    const localTop = top15.filter(a => !isForeign(a.category));
+    const foreignTop = top15.filter(a => isForeign(a.category));
+
+    const localRest = theRest.filter(a => !isForeign(a.category));
+    const foreignRest = theRest.filter(a => isForeign(a.category));
 
     if (activeCategory) {
        return (
@@ -198,25 +203,36 @@ function App() {
         <h2 className="feed-header">Noticias Destacadas</h2>
         <div className="dual-layout" style={{marginBottom: '4rem'}}>
             <div className="feed-column main-column">
-                {localDestacadas.map((article, idx) => (
+                {stabilizeImages(localTop).map((article, idx) => (
                    <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
-                ))}
-                {localOtras.length > 0 && <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none', marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '2px solid var(--border-color)'}}>Otras Noticias Locales</h3>}
-                {localOtras.map(article => (
-                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
                 ))}
             </div>
             
             <div className="feed-column side-column">
-                {foreignDestacadas.map((article, idx) => (
-                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
-                ))}
-                {foreignOtras.length > 0 && <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none', marginTop: foreignDestacadas.length > 0 ? '2.5rem' : '0', paddingTop: foreignDestacadas.length > 0 ? '2.5rem' : '0', borderTop: foreignDestacadas.length > 0 ? '2px solid var(--border-color)' : 'none'}}>Mundo & Deportes</h3>}
-                {foreignOtras.map(article => (
-                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                {stabilizeImages(foreignTop).map((article, idx) => (
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
                 ))}
             </div>
         </div>
+
+        {theRest.length > 0 && (
+            <>
+               <h2 className="feed-header">Otras Noticias</h2>
+               <div className="dual-layout" style={{marginBottom: '4rem'}}>
+                   <div className="feed-column main-column">
+                       {stabilizeImages(localRest).map(article => (
+                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                       ))}
+                   </div>
+                   
+                   <div className="feed-column side-column">
+                       {stabilizeImages(foreignRest).map(article => (
+                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                       ))}
+                   </div>
+               </div>
+            </>
+        )}
       </>
     );
   };
