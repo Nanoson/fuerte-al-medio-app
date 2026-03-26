@@ -77,6 +77,13 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
         >
           Portada
         </span>
+        <span 
+          className={`nav-item ${activeCategory === 'NUESTRO EQUIPO' ? 'active' : ''}`}
+          onClick={() => setActiveCategory('NUESTRO EQUIPO')}
+          style={{fontWeight: 800, color: 'var(--accent)'}}
+        >
+          NUESTRO EQUIPO
+        </span>
         {categories.map(cat => (
           <span 
             key={cat} 

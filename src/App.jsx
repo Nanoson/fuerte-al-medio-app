@@ -216,6 +216,7 @@ function App() {
               <div>
                   <h2 style={{fontFamily: 'var(--font-display)', fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '0.2rem'}}>{targetAuthor?.name}</h2>
                   <span style={{fontSize: '1rem', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{targetAuthor?.role}</span>
+                  <p style={{fontSize: '1.05rem', color: 'var(--text-secondary)', marginTop: '0.8rem', lineHeight: '1.6'}}>{targetAuthor?.bio}</p>
               </div>
            </div>
            
@@ -248,7 +249,7 @@ function App() {
            <h2 className="feed-header">Resultados de búsqueda</h2>
            <div className="news-grid" style={{marginBottom: '4rem'}}>
              {stabilizeImages(sortedNews).map((article, idx) => (
-               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
              ))}
            </div>
          </>
@@ -261,13 +262,13 @@ function App() {
         <div className="dual-layout" style={{marginBottom: '4rem'}}>
             <div className="feed-column main-column">
                 {stabilizeImages(localTop).map((article, idx) => (
-                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                 ))}
             </div>
             
             <div className="feed-column side-column">
                 {stabilizeImages(foreignTop).map((article, idx) => (
-                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                 ))}
             </div>
         </div>
