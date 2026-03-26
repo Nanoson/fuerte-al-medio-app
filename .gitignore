@@ -30,3 +30,8 @@ dist-ssr
 *.db
 *.db-journal
 fuertealmedio.db
+
+# Multimedia Assets
+video_maker/
+*.mp4
+*.mp3
