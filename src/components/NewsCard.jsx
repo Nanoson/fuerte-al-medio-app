@@ -182,9 +182,17 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                 {article.category}
             </span>
             <span style={{fontSize: '0.85rem', color: '#888', fontWeight: 600}}>{article.date || new Date().toLocaleDateString('es-AR')}</span>
-            <span style={{fontSize: '0.85rem', color: '#16a34a', fontWeight: 800, background: '#dcfce7', padding: '0.2rem 0.6rem', borderRadius: '12px'}}>
-                ⚡ {article.importanceScore || 1} {article.importanceScore === 1 ? 'Fuente' : 'Fuentes'}
-            </span>
+            
+            <div className="source-tooltip-container">
+                <span style={{fontSize: '0.85rem', color: '#16a34a', fontWeight: 800, background: '#dcfce7', padding: '0.2rem 0.6rem', borderRadius: '12px'}}>
+                    ⚡ {article.importanceScore || 1} {article.importanceScore === 1 ? 'Fuente' : 'Fuentes'}
+                </span>
+                <div className="tooltip-text">
+                    {article.sources && Array.isArray(article.sources) && article.sources.length > 0 
+                        ? article.sources.map(s => s.name || s.domain).join(' • ') 
+                        : 'Recopilación en progreso...'}
+                </div>
+            </div>
         </div>
         {renderRadialGauge()}
       </div>

@@ -159,43 +159,67 @@ function App() {
       return { destacadasNews: outDestacadas, otrasNews: outOtras, sortedNews: uniqueSortedNews };
   }, [filteredByCategory, activeCategory]);
 
-  const renderFeed = () => (
-    <>
-      <h2 className="feed-header">
-        {searchQuery ? `Resultados de búsqueda` : (activeCategory ? `Sección: ${activeCategory}` : `Noticias Destacadas`)}
-      </h2>
-      
-      {/* VISTA PORTADA: Noticias Destacadas Estrictas de Hoy */}
-      {!activeCategory && destacadasNews.length > 0 && (
-         <div className="news-grid" style={{marginBottom: '4rem'}}>
-           {destacadasNews.map((article, idx) => (
-             <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
-           ))}
-         </div>
-      )}
+  const renderFeed = () => {
+    const isForeign = (cat) => ['Internacional', 'Deportes', 'Espectáculos', 'Mercados'].includes(cat);
 
-      {/* VISTA CATEGORÍA PLANA */}
-      {activeCategory && sortedNews.length > 0 && (
-        <div className="news-grid" style={{marginBottom: '4rem'}}>
-          {stabilizeImages(sortedNews).map((article, idx) => (
-            <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
-          ))}
-        </div>
-      )}
+    const localDestacadas = destacadasNews.filter(a => !isForeign(a.category));
+    const foreignDestacadas = destacadasNews.filter(a => isForeign(a.category));
+    const localOtras = otrasNews.filter(a => !isForeign(a.category));
+    const foreignOtras = otrasNews.filter(a => isForeign(a.category));
 
-      {/* VISTA PORTADA: Otras Noticias */}
-      {!activeCategory && otrasNews.length > 0 && (
-        <div style={{paddingTop: "2.5rem", borderTop: "2px solid var(--border-color)"}}>
-          <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none'}}>Otras Noticias</h3>
-          <div className="news-grid">
-            {otrasNews.map(article => (
-              <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
-            ))}
-          </div>
+    if (activeCategory) {
+       return (
+         <>
+           <h2 className="feed-header">Sección: {activeCategory}</h2>
+           <div className="news-grid" style={{marginBottom: '4rem'}}>
+             {stabilizeImages(sortedNews).map((article, idx) => (
+               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+             ))}
+           </div>
+         </>
+       );
+    }
+
+    if (searchQuery) {
+       return (
+         <>
+           <h2 className="feed-header">Resultados de búsqueda</h2>
+           <div className="news-grid" style={{marginBottom: '4rem'}}>
+             {stabilizeImages(sortedNews).map((article, idx) => (
+               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+             ))}
+           </div>
+         </>
+       );
+    }
+
+    return (
+      <>
+        <h2 className="feed-header">Noticias Destacadas</h2>
+        <div className="dual-layout" style={{marginBottom: '4rem'}}>
+            <div className="feed-column main-column">
+                {localDestacadas.map((article, idx) => (
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                ))}
+                {localOtras.length > 0 && <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none', marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '2px solid var(--border-color)'}}>Otras Noticias Locales</h3>}
+                {localOtras.map(article => (
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                ))}
+            </div>
+            
+            <div className="feed-column side-column">
+                {foreignDestacadas.map((article, idx) => (
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                ))}
+                {foreignOtras.length > 0 && <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none', marginTop: foreignDestacadas.length > 0 ? '2.5rem' : '0', paddingTop: foreignDestacadas.length > 0 ? '2.5rem' : '0', borderTop: foreignDestacadas.length > 0 ? '2px solid var(--border-color)' : 'none'}}>Mundo & Deportes</h3>}
+                {foreignOtras.map(article => (
+                   <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                ))}
+            </div>
         </div>
-      )}
-    </>
-  )
+      </>
+    );
+  };
 
   const renderSingleArticle = () => {
     const otherNews = news.filter(a => String(a.id) !== String(selectedArticle.id)).slice(0, 6);
