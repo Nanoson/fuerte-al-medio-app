@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Header from './components/Header'
 import NewsCard from './components/NewsCard'
-import MarketsWidget from './components/MarketsWidget'
+import TeamPage from './components/TeamPage'
+import { authors } from './data/authors.js'
 
 // ==========================================
 // MÓDULOS DE PROCESAMIENTO ESTÁTICO GLOBAL
@@ -52,6 +53,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [news, setNews] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
+  const [selectedAuthor, setSelectedAuthor] = useState(null)
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -133,9 +135,18 @@ function App() {
   const handleHomeClick = () => {
     setActiveCategory(null);
     setSelectedArticle(null);
+    setSelectedAuthor(null);
     setSearchQuery('');
     window.history.pushState({ activeCategory: null, selectedArticle: null }, '', '/');
   }
+
+  const handleAuthorSelect = (authorId) => {
+    setSelectedAuthor(authorId);
+    setActiveCategory(null);
+    setSearchQuery('');
+    setSelectedArticle(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const searchResults = useMemo(() => {
     if (!searchQuery) return news;
@@ -187,13 +198,43 @@ function App() {
     const localRest = locals.slice(8);
     const foreignRest = foreigners.slice(8);
 
+    if (activeCategory === 'NUESTRO EQUIPO') {
+       return <TeamPage onAuthorSelect={handleAuthorSelect} />;
+    }
+
+    if (selectedAuthor) {
+       const targetAuthor = authors.find(a => a.id === selectedAuthor);
+       const authorNews = sortedNews.filter(a => a.authorId === selectedAuthor);
+       
+       return (
+         <div style={{animation: 'fadeIn 0.3s ease'}}>
+           <div style={{background: 'var(--card-bg)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '2rem'}}>
+              <div style={{width: '100px', height: '100px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+                  <svg width="60" height="60" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </div>
+              <div>
+                  <h2 style={{fontFamily: 'var(--font-display)', fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '0.2rem'}}>{targetAuthor?.name}</h2>
+                  <span style={{fontSize: '1rem', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{targetAuthor?.role}</span>
+              </div>
+           </div>
+           
+           <h3 className="feed-header">Artículos Publicados</h3>
+           <div className="news-grid" style={{marginBottom: '4rem'}}>
+             {stabilizeImages(authorNews).map((article, idx) => (
+               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
+             ))}
+           </div>
+         </div>
+       );
+    }
+
     if (activeCategory) {
        return (
          <>
            <h2 className="feed-header">Sección: {activeCategory}</h2>
            <div className="news-grid" style={{marginBottom: '4rem'}}>
              {stabilizeImages(sortedNews).map((article, idx) => (
-               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+               <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
              ))}
            </div>
          </>
@@ -230,19 +271,19 @@ function App() {
             </div>
         </div>
 
-        {(localRest.length > 0 || foreignRest.length > 0) && (
+        {theRest.length > 0 && (
             <>
                <h2 className="feed-header">Otras Noticias</h2>
                <div className="dual-layout" style={{marginBottom: '4rem'}}>
                    <div className="feed-column main-column">
                        {stabilizeImages(localRest).map(article => (
-                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                        ))}
                    </div>
                    
                    <div className="feed-column side-column">
                        {stabilizeImages(foreignRest).map(article => (
-                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+                          <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                        ))}
                    </div>
                </div>
@@ -261,7 +302,7 @@ function App() {
            ← Volver al Menú Principal
          </button>
          
-         <NewsCard article={selectedArticle} isFullView={true} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
+         <NewsCard article={selectedArticle} isFullView={true} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
          
          {/* Botón Inferior para volver cómodo al menú */}
          <div style={{marginTop: '3.5rem', marginBottom: '2rem', display: 'flex', justifyContent: 'center'}}>

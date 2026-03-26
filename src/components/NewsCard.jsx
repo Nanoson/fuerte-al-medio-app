@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { authors } from '../data/authors.js';
 
 const renderBoldText = (text) => {
     if (!text) return null;
     return text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={i} style={{fontWeight: 800, color: '#111'}}>{part.slice(2, -2)}</strong>;
+            return <strong key={i} style={{fontWeight: 800, color: 'var(--text-main)', opacity: '0.95'}}>{part.slice(2, -2)}</strong>;
         }
         return part;
     });
 };
 
-const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategorySelect, onUpdate }) => {
+const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategorySelect, onUpdate, onAuthorSelect }) => {
   const [votesCount, setVotesCount] = useState(Number(article.userVotesCount) || 0);
   const [votesSum, setVotesSum] = useState(Number(article.userVotesSum) || 0);
   const [hasVoted, setHasVoted] = useState(false);
@@ -204,6 +205,24 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       >
         {article.title}
       </h2>
+
+      {/* 3. FIRMA DEL AUTOR (BYLINE) */}
+      {(() => {
+          const authorData = authors.find(a => a.id === article.authorId) || authors.find(a => a.id === 'cuesta_pol');
+          return (
+              <div 
+                  onClick={(e) => { e.stopPropagation(); if (onAuthorSelect) onAuthorSelect(authorData.id); }}
+                  style={{display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem', cursor: onAuthorSelect ? 'pointer' : 'default', width: 'max-content'}}
+              >
+                  <div style={{width: '28px', height: '28px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#9ca3af" style={{marginBottom: '-2px'}}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                  </div>
+                  <span style={{fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600}}>
+                      Por <span style={{textDecoration: 'underline', textDecorationColor: 'var(--accent)', color: 'var(--text-main)'}}>{authorData.name}</span>
+                  </span>
+              </div>
+          );
+      })()}
 
       {/* 4. EL COPETE */}
       {(article.copete || article.Copete) && !isCompact && (

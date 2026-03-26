@@ -26,6 +26,7 @@ app.get('/api/news', async (req, res) => {
         const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedat DESC`);
         const articles = rows.map(row => ({
             id: row.id,
+            authorId: row.authorid || 'cuesta_pol',
             title: row.title,
             category: row.category,
             biasNeutralization: row.biasneutralization,
