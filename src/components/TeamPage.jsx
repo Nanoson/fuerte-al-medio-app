@@ -1,5 +1,6 @@
 import React from 'react';
 import { authors } from '../data/authors.js';
+import AuthorAvatar from './AuthorAvatar';
 
 const TeamPage = ({ onAuthorSelect }) => {
   return (
@@ -15,9 +16,7 @@ const TeamPage = ({ onAuthorSelect }) => {
         {authors.map(author => (
           <div key={author.id} style={{background: 'var(--card-bg)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column'}}>
             <div style={{height: '180px', background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', position: 'relative'}}>
-                <svg width="100" height="120" viewBox="0 0 24 24" fill="#9ca3af" style={{marginBottom: '-5px', opacity: 0.6}}>
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+                <AuthorAvatar authorId={author.id} size={110} />
             </div>
             <div style={{padding: '1.5rem', flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
                 <h3 style={{fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: 'var(--text-main)', marginBottom: '0.2rem'}}>{author.name}</h3>

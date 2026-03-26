@@ -3,6 +3,7 @@ import Header from './components/Header'
 import NewsCard from './components/NewsCard'
 import TeamPage from './components/TeamPage'
 import MarketsWidget from './components/MarketsWidget'
+import AuthorAvatar from './components/AuthorAvatar'
 import { authors } from './data/authors.js'
 
 // ==========================================
@@ -210,8 +211,8 @@ function App() {
        return (
          <div style={{animation: 'fadeIn 0.3s ease'}}>
            <div style={{background: 'var(--card-bg)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)', marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '2rem'}}>
-              <div style={{width: '100px', height: '100px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <div style={{width: '100px', height: '100px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', flexShrink: 0, overflow: 'hidden'}}>
+                  <AuthorAvatar authorId={targetAuthor?.id} size={85} />
               </div>
               <div>
                   <h2 style={{fontFamily: 'var(--font-display)', fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '0.2rem'}}>{targetAuthor?.name}</h2>

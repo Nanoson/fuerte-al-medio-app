@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { authors } from '../data/authors.js';
+import AuthorAvatar from './AuthorAvatar';
 
 const renderBoldText = (text) => {
     if (!text) return null;
@@ -214,8 +215,8 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                   onClick={(e) => { e.stopPropagation(); if (onAuthorSelect) onAuthorSelect(authorData.id); }}
                   style={{display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem', cursor: onAuthorSelect ? 'pointer' : 'default', width: 'max-content'}}
               >
-                  <div style={{width: '28px', height: '28px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#9ca3af" style={{marginBottom: '-2px'}}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                  <div style={{width: '28px', height: '28px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden', flexShrink: 0}}>
+                      <AuthorAvatar authorId={authorData.id} size={26} />
                   </div>
                   <span style={{fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600}}>
                       Por <span style={{textDecoration: 'underline', textDecorationColor: 'var(--accent)', color: 'var(--text-main)'}}>{authorData.name}</span>
