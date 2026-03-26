@@ -272,7 +272,7 @@ function App() {
             </div>
         </div>
 
-        {theRest.length > 0 && (
+        {(localRest.length > 0 || foreignRest.length > 0) && (
             <>
                <h2 className="feed-header">Otras Noticias</h2>
                <div className="dual-layout" style={{marginBottom: '4rem'}}>
