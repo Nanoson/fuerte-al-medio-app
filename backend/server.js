@@ -200,6 +200,7 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`===============================================`);
     console.log(`🌐 Backend Scale V2 Activo -> Puerto ${PORT}`);
+    console.log(`⚠️ Ciclo Automático en Boot ha sido BLOQUEADO para proteger Cuota API.`);
+    console.log(`⏰ Próximo barrido cronológico programado por Node-Cron.`);
     console.log(`===============================================`);
-    runScrapingCycle();
 });
