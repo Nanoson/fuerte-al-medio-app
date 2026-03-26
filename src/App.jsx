@@ -55,13 +55,23 @@ function App() {
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-  useEffect(() => {
+  const fetchNews = () => {
     fetch(`${API_BASE}/api/news`)
       .then(r => r.json())
       .then(data => {
-        if(data && data.length > 0) setNews(data);
+        if(data && data.length > 0) {
+            setNews(data);
+            if (selectedArticle) {
+                const freshArticle = data.find(a => String(a.id) === String(selectedArticle.id));
+                if (freshArticle) setSelectedArticle(freshArticle);
+            }
+        }
       })
       .catch(e => console.log("Backend API desconectado.", e));
+  };
+
+  useEffect(() => {
+    fetchNews();
   }, [])
 
   useEffect(() => {
@@ -159,7 +169,7 @@ function App() {
       {!activeCategory && destacadasNews.length > 0 && (
          <div className="news-grid" style={{marginBottom: '4rem'}}>
            {destacadasNews.map((article, idx) => (
-             <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} />
+             <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
            ))}
          </div>
       )}
@@ -168,7 +178,7 @@ function App() {
       {activeCategory && sortedNews.length > 0 && (
         <div className="news-grid" style={{marginBottom: '4rem'}}>
           {stabilizeImages(sortedNews).map((article, idx) => (
-            <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} />
+            <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={idx === 0} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
           ))}
         </div>
       )}
@@ -179,7 +189,7 @@ function App() {
           <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none'}}>Otras Noticias</h3>
           <div className="news-grid">
             {otrasNews.map(article => (
-              <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} />
+              <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isCompact={Number(article.importanceScore) < 2} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
             ))}
           </div>
         </div>
@@ -188,7 +198,7 @@ function App() {
   )
 
   const renderSingleArticle = () => {
-    const otherNews = news.filter(a => a.id !== selectedArticle.id).slice(0, 6);
+    const otherNews = news.filter(a => String(a.id) !== String(selectedArticle.id)).slice(0, 6);
     
     return (
       <div className="single-view-container" style={{animation: "fadeIn 0.3s ease"}}>
@@ -196,7 +206,7 @@ function App() {
            ← Volver al Menú Principal
          </button>
          
-         <NewsCard article={selectedArticle} isFullView={true} onCategorySelect={handleCategorySelect} />
+         <NewsCard article={selectedArticle} isFullView={true} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
          
          {/* Botón Inferior para volver cómodo al menú */}
          <div style={{marginTop: '3.5rem', marginBottom: '2rem', display: 'flex', justifyContent: 'center'}}>
@@ -209,7 +219,7 @@ function App() {
           <h3 className="feed-header" style={{fontSize: "1.6rem", borderBottom: 'none', marginBottom: '1rem'}}>Mantente Informado</h3>
           <div className="news-grid">
             {otherNews.map(article => (
-              <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} onCategorySelect={handleCategorySelect} />
+              <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} />
             ))}
           </div>
         </div>

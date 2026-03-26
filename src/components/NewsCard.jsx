@@ -10,7 +10,7 @@ const renderBoldText = (text) => {
     });
 };
 
-const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategorySelect }) => {
+const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategorySelect, onUpdate }) => {
   const [votesCount, setVotesCount] = useState(Number(article.userVotesCount) || 0);
   const [votesSum, setVotesSum] = useState(Number(article.userVotesSum) || 0);
   const [hasVoted, setHasVoted] = useState(false);
@@ -82,6 +82,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
               headers: {'Content-Type': 'application/json'}, 
               body: JSON.stringify({type: 'vote', score: Number(scoreInput)}) 
           });
+          if (onUpdate) onUpdate();
       } catch (e) {}
   };
 
@@ -106,6 +107,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({type: 'comment', commentObj: newComm}) 
         });
+        if (onUpdate) onUpdate();
     } catch(e) {}
   };
 

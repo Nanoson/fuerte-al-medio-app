@@ -21,36 +21,37 @@ app.get('/api/markets', async (req, res) => {
     res.json(data);
 });
 
-app.get('/api/news', (req, res) => {
-    db.all(`SELECT * FROM articles ORDER BY updatedAt DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
+app.get('/api/news', async (req, res) => {
+    try {
+        const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedAt DESC`);
         const articles = rows.map(row => ({
             ...row,
-            sources: JSON.parse(row.sources || '[]'),
-            related: JSON.parse(row.related || '[]'),
-            comments: JSON.parse(row.comments || '[]')
+            sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
+            related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
+            comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || [])
         }));
         res.json(articles);
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // ---------------------------------------------------
 // REST API - VOTOS CÍVICOS E HILOS TWITTER-LIKE
 // ---------------------------------------------------
-app.post('/api/news/:id/action', (req, res) => {
+app.post('/api/news/:id/action', async (req, res) => {
     const { id } = req.params;
     const { type, commentObj, score } = req.body; 
 
-    if (type === 'vote' && typeof score === 'number') {
-        db.run(`UPDATE articles SET userVotesCount = COALESCE(userVotesCount, 0) + 1, userVotesSum = COALESCE(userVotesSum, 0) + ? WHERE id = ?`, [Number(score), Number(id)], function(err) {
-            if(err) console.error("Vote Update Error:", err.message);
-            res.json({ success: !err });
-        });
-    } else if (type === 'comment' && commentObj) {
-        db.get(`SELECT comments FROM articles WHERE id = ?`, [id], (err, row) => {
-            if(row) {
-                let commentsArr = JSON.parse(row.comments || '[]');
+    try {
+        if (type === 'vote' && typeof score === 'number') {
+            await db.query(`UPDATE articles SET userVotesCount = COALESCE(userVotesCount, 0) + 1, userVotesSum = COALESCE(userVotesSum, 0) + $1 WHERE id = $2`, [Number(score), Number(id)]);
+            res.json({ success: true });
+        } else if (type === 'comment' && commentObj) {
+            const { rows } = await db.query(`SELECT comments FROM articles WHERE id = $1`, [id]);
+            if(rows.length > 0) {
+                const row = rows[0];
+                let commentsArr = typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []);
                 commentsArr.push({ 
                     id: commentObj.id || Date.now().toString() + Math.random().toString(36).substr(2,5),
                     parentId: commentObj.parentId || null,
@@ -58,13 +59,15 @@ app.post('/api/news/:id/action', (req, res) => {
                     text: commentObj.text, 
                     date: new Date().toISOString() 
                 });
-                db.run(`UPDATE articles SET comments = ? WHERE id = ?`, [JSON.stringify(commentsArr), id], () => {
-                    res.json({ success: true, comments: commentsArr });
-                });
+                await db.query(`UPDATE articles SET comments = $1 WHERE id = $2`, [JSON.stringify(commentsArr), id]);
+                res.json({ success: true, comments: commentsArr });
             } else {
                 res.status(404).json({ error: 'News not found' });
             }
-        });
+        }
+    } catch (err) {
+        console.error("Action Error:", err.message);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -142,14 +145,12 @@ const runScrapingCycle = async () => {
                 let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
                 if (isMercados) finalNews.category = 'Mercados';
 
-                const stmt = db.prepare(`
+                await db.query(`
                     INSERT INTO articles (title, category, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=excluded.title, summary=excluded.summary, conflictPoints=excluded.conflictPoints, importanceScore=excluded.importanceScore, copete=excluded.copete, imageUrl=excluded.imageUrl, youtubeQuery=excluded.youtubeQuery, updatedAt=CURRENT_TIMESTAMP
-                `);
-                
-                stmt.run(
+                        title=EXCLUDED.title, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, updatedAt=CURRENT_TIMESTAMP
+                `, [
                     finalNews.title,
                     finalNews.category,
                     finalNews.biasNeutralization,
@@ -163,9 +164,8 @@ const runScrapingCycle = async () => {
                     finalNews.copete || finalNews.Copete || null,
                     targetCluster.clusterImage || null,
                     finalNews.youtubeQuery || null
-                );
-                stmt.finalize();
-                console.log(`✨ Guardado en SQLite (Score Relevancia: ${new Set(targetCluster.articles.map(a => a.source.name)).size}): "${finalNews.title.substring(0, 40)}..."`);
+                ]);
+                console.log(`✨ Guardado en PostgreSQL (Score Relevancia: ${new Set(targetCluster.articles.map(a => a.source.name)).size}): "${finalNews.title.substring(0, 40)}..."`);
             }
         } catch (error) {
             console.error(`⚠️ Error neural en cluster ${i}:`, error.message);
