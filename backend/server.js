@@ -23,12 +23,29 @@ app.get('/api/markets', async (req, res) => {
 
 app.get('/api/news', async (req, res) => {
     try {
-        const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedAt DESC`);
+        const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedat DESC`);
         const articles = rows.map(row => ({
-            ...row,
+            id: row.id,
+            title: row.title,
+            category: row.category,
+            biasNeutralization: row.biasneutralization,
+            date: row.date,
+            summary: row.summary,
+            conflictPoints: row.conflictpoints,
             sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
             related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
-            comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || [])
+            topicKey: row.topickey,
+            likes: row.likes,
+            dislikes: row.dislikes,
+            userVotesCount: row.uservotescount,
+            userVotesSum: row.uservotessum,
+            comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
+            importanceScore: row.importancescore,
+            copete: row.copete,
+            imageUrl: row.imageurl,
+            youtubeQuery: row.youtubequery,
+            createdAt: row.createdat,
+            updatedAt: row.updatedat
         }));
         res.json(articles);
     } catch (err) {

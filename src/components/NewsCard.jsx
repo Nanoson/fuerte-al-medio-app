@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const renderBoldText = (text) => {
     if (!text) return null;
@@ -16,6 +16,11 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
   const [hasVoted, setHasVoted] = useState(false);
   const [scoreInput, setScoreInput] = useState(50);
   
+  useEffect(() => {
+      setVotesCount(Number(article.userVotesCount) || 0);
+      setVotesSum(Number(article.userVotesSum) || 0);
+  }, [article.userVotesCount, article.userVotesSum]);
+
   const [comments, setComments] = useState(article.comments || []);
   const [nameInput, setNameInput] = useState('');
   const [textInput, setTextInput] = useState('');
