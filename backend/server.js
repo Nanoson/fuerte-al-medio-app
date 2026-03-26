@@ -100,8 +100,8 @@ const runScrapingCycle = async () => {
 
     console.log(`✅ Procesado: Se generaron ${clusters.length} tópicos súper-puestos.`);
 
-    // Aumentamos a 80 el techo de recolección para cubrir inmensamente el ecosistema periodístico 
-    const topClusters = clusters.slice(0, 80);
+    // Optimización extrema de Token-Cost: Bajamos de 80 a 25 el techo de clusters redactados por la IA.
+    const topClusters = clusters.slice(0, 25);
     console.log(`🗞️ Ingeriendo la matriz del Top ${topClusters.length} de racimos noticiosos...`);
 
     // Helper anti-bloqueo: Retraso estratégico para prevenir baneos '429 Rate Limit' de Gemini (Límite orgánico 15 RPM)
@@ -174,7 +174,8 @@ const runScrapingCycle = async () => {
     console.log(`[${new Date().toISOString()}] 🏁 Ciclo de Recolección finalizado.`);
 };
 
-cron.schedule('*/30 * * * *', () => { runScrapingCycle(); });
+// Frecuencia optimizada económicamente: 1 iteración completa cada 2 horas
+cron.schedule('0 */2 * * *', () => { runScrapingCycle(); });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
