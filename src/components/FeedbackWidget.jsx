@@ -43,20 +43,27 @@ const FeedbackWidget = ({ currentContextId = null, currentContextTitle = null })
     return (
         <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999 }}>
             
-            {/* El Globo Flotante Primario */}
+            {/* El Globo Flotante Primario (Ahora con Texto Explícito) */}
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 style={{
-                    width: '60px', height: '60px', borderRadius: '50%', background: 'var(--text-main)', 
-                    color: 'var(--bg-color)', border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s',
-                    transform: isOpen ? 'rotate(15deg) scale(0.9)' : 'rotate(0deg) scale(1)'
+                    height: '50px', padding: '0 20px', borderRadius: '25px', background: 'var(--text-main)', 
+                    color: 'var(--bg-color)', border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', gap: '8px',
+                    fontFamily: 'var(--font-display)', fontWeight: 'bold', fontSize: '1rem',
+                    transform: isOpen ? 'scale(0.95)' : 'scale(1)'
                 }}
             >
                 {isOpen ? (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Cerrar
+                    </>
                 ) : (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <>
+                        <span style={{fontSize: '1.2rem'}}>💡</span>
+                        Danos tu Opinión
+                    </>
                 )}
             </button>
 

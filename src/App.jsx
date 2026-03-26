@@ -58,7 +58,9 @@ function App() {
   const [news, setNews] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [selectedAuthor, setSelectedAuthor] = useState(null)
-  const [showDashboard, setShowDashboard] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(() => {
+      return typeof window !== 'undefined' && window.location.search.includes('admin=true');
+  })
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -370,15 +372,6 @@ function App() {
             </>
         )}
       </main>
-
-      {/* Botón Oculto de Acceso Admin: Click abajo a la izquierda para el Dashboard */}
-      {!showDashboard && (
-          <div 
-             onClick={() => setShowDashboard(true)} 
-             style={{position: 'fixed', bottom: 0, left: 0, width: '50px', height: '50px', cursor: 'pointer', zIndex: 9999}}
-             title="Secret Admin Panel"
-          />
-      )}
 
       {/* Widget Global Flotante */}
       {!showDashboard && (
