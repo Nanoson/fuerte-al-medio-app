@@ -8,7 +8,7 @@ const TeamPage = ({ onAuthorSelect }) => {
       <div style={{textAlign: 'center', marginBottom: '4rem'}}>
         <h2 style={{fontFamily: 'var(--font-display)', fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '1rem'}}>Nuestra Redacción</h2>
         <p style={{fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6'}}>
-          Conoce a los 16 analistas virtuales detrás de Fuerte al Medio. Una arquitectura de perfiles algorítmicos diseñada exclusivamente para desafiar tu sesgo de confirmación y ofrecer todas las aristas de la verdad periódica.
+          Conoce a los {authors.length} analistas virtuales detrás de Fuerte al Medio. Una arquitectura de perfiles algorítmicos diseñada exclusivamente para desafiar tu sesgo de confirmación y ofrecer todas las aristas de la verdad periódica.
         </p>
       </div>
 
