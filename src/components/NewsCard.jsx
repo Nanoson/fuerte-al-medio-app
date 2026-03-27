@@ -281,24 +281,59 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
         )
       ) : (
         <div style={{animation: "fadeIn 0.3s ease"}}>
-          {/* CUERPO PRINCIPAL ESCRITO EN PÁRRAFOS SEPARADOS Y BULLET POINTS */}
+          {/* CUERPO PRINCIPAL CON BURBUJAS DE BULLET POINTS */}
           <div style={{marginTop: '2.5rem', paddingBottom: '1.5rem'}}>
-              {article.summary.replace(/\\n/g, '\n').split(/\n+/).filter(p => p.trim() !== '').map((paragraph, idx) => {
-                  const isBullet = paragraph.trim().startsWith('-') || paragraph.trim().startsWith('•');
-                  return (
-                      <p key={idx} className="article-summary" style={{
-                          fontSize: isBullet ? '1.15rem' : '1.25rem', 
-                          lineHeight: '1.9', 
-                          color: 'var(--text-main)', 
-                          marginBottom: isBullet ? '0.8rem' : '1.8rem',
-                          marginLeft: isBullet ? '2rem' : '0',
-                          listStyleType: isBullet ? 'disc' : 'none',
-                          display: isBullet ? 'list-item' : 'block'
+              {(() => {
+                  const paragraphs = article.summary.replace(/\\n/g, '\n').split(/\n+/).filter(p => p.trim() !== '');
+                  let elements = [];
+                  let currentBullets = [];
+
+                  const renderBulletGroup = (bullets, keyIndex) => (
+                      <div key={`bullet-group-${keyIndex}`} style={{
+                          background: 'var(--card-bg)', border: '1px solid var(--accent)', borderRadius: '12px',
+                          padding: '1.5rem', margin: '2rem 0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
                       }}>
-                          {isBullet ? renderBoldText(paragraph.replace(/^[-•]\s*/, '')) : renderBoldText(paragraph)}
-                      </p>
+                          <span style={{display: 'block', fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem'}}>Puntos Clave del Debate</span>
+                          <ul style={{listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                              {bullets.map((b, i) => (
+                                  <li key={`b-${i}`} style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
+                                      <span style={{color: 'var(--accent)', fontSize: '1.2rem', lineHeight: '1.5'}}>•</span>
+                                      <span style={{fontSize: '1.15rem', lineHeight: '1.6', color: 'var(--text-main)', fontWeight: 500}}>
+                                          {renderBoldText(b.replace(/^[-•]\s*/, ''))}
+                                      </span>
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
                   );
-              })}
+
+                  for (let idx = 0; idx < paragraphs.length; idx++) {
+                      const paragraph = paragraphs[idx];
+                      const isBullet = paragraph.trim().startsWith('-') || paragraph.trim().startsWith('•');
+                      
+                      if (isBullet) {
+                          currentBullets.push(paragraph);
+                      } else {
+                          if (currentBullets.length > 0) {
+                              elements.push(renderBulletGroup(currentBullets, idx));
+                              currentBullets = [];
+                          }
+                          elements.push(
+                              <p key={idx} className="article-summary" style={{
+                                  fontSize: '1.25rem', lineHeight: '1.9', color: 'var(--text-main)', marginBottom: '1.8rem'
+                              }}>
+                                  {renderBoldText(paragraph)}
+                              </p>
+                          );
+                      }
+                  }
+                  
+                  if (currentBullets.length > 0) {
+                      elements.push(renderBulletGroup(currentBullets, 'end'));
+                  }
+
+                  return elements;
+              })()}
           </div>
           
           <div className="article-conflict" style={{backgroundColor: 'rgba(128,128,128,0.03)', borderLeft: '4px solid var(--text-main)', margin: '2.5rem 0', padding: '1.5rem'}}>

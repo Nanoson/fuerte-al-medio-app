@@ -21,7 +21,7 @@ async function fetchSocialTrends() {
                 headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) FuerteAlMedioBot/1.0' }
             });
             
-            const posts = res.data.data.children.map(c => c.data).filter(p => !p.stickied && p.score > 20);
+            const posts = res.data.data.children.map(c => c.data).filter(p => !p.stickied && p.score > 20 && p.num_comments > 15);
             
             for (const post of posts) {
                 // Fetch top comments for this post
@@ -31,9 +31,10 @@ async function fetchSocialTrends() {
                     });
                     
                     const comments = commentsRes.data[1].data.children
-                                    .slice(0, 10)
+                                    .slice(0, 15)
                                     .map(c => c.data)
-                                    .filter(c => c.body && c.author && c.author !== 'AutoModerator' && c.body !== '[deleted]' && c.body !== '[removed]');
+                                    .filter(c => c.body && c.author && c.author !== 'AutoModerator' && c.body !== '[deleted]' && c.body !== '[removed]' && c.body.length > 25)
+                                    .slice(0, 10);
                     
                     if (comments.length >= 4) {
                          trendingClusters.push({
