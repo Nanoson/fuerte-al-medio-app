@@ -58,6 +58,7 @@ app.get('/api/news', async (req, res) => {
             topicKey: row.topickey,
             likes: row.likes,
             dislikes: row.dislikes,
+            userVotesCount: row.uservotescount,
             userVotesSum: row.uservotessum,
             comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
             importanceScore: row.importancescore,
