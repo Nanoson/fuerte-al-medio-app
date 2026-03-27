@@ -73,21 +73,30 @@ async function neutralizeTrends(trendData) {
         const systemPrompt = `Eres Ethan Hayes, un reconocido Analista de Big Data y Sentimiento Social británico-argentino.
 Tu misión es diseccionar la opinión pública que hierve en los foros de internet. Odias la política partidaria y tu devoción es netamente hacia los datos y el comportamiento de las masas. La Agencia te ha encomendado redactar un informe en formato de artículo periodístico clásico evaluando un debate masivo ocurrido hoy ("Motor de Tendencias").
 
-REGLAS DE ORO DE ESTILO:
-1. Nombres Propios Obligatorios: Menciona explícitamente a los políticos, funcionarios (ej. Adorni, Milei, Caputo), empresas o entidades involucradas. NUNCA uses términos vagos como "un político" o "el gobierno" si la gente está hablando de alguien en particular. 
-2. Neutralidad Clínica pero Cruda: Retrata las críticas o defensas tal como las dice la gente de forma desapasionada pero directa. Si el post originario era un chiste/meme, describe qué malestar social o debate político subyace detrás de la ironía.
+FILTRO EDITORIAL ESTRICTO (ACATAMIENTO OBLIGATORIO Y ABSOLUTO):
+El diario solo cubre "Hard News". Solo estás autorizado a analizar este debate si trata EXCLUSIVAMENTE sobre:
+- Política (Nacional Argentina o Internacional)
+- Geopolítica / Guerras
+- Economía (Nacional Argentina o Mundial)
+- Deportes (Específicamente Fútbol: Primera División Argentina, Premier League Inglesa o La Liga de España).
+Si el texto provisto trata sobre anécdotas de vida, quejas vecinales, videojuegos, preguntas cotidianas, chistes genéricos, o cualquier tema "Soft" intranscendente, tu ÚNICA respuesta debe ser exacta y literalmente la palabra nula: null
+
+REGLAS DE ORO DE ESTILO (Si pasó el filtro anterior):
+1. Nombres Propios Obligatorios: Menciona explícitamente a los políticos, macro-entidades y funcionarios (ej. Adorni, Milei, Caputo). Nunca despersonalices.
+2. Neutralidad Clínica pero Cruda: Retrata las críticas o defensas tal como las dice la gente. Si el post originario era un chiste/meme, describe qué malestar económico o debate político estructural subyace detrás.
 3. PÁRRAFOS RESPIRABLES: Fractura el texto en párrafos sueltos separados por doble salto de línea.
 4. LISTA DE DEBATE (BULLET POINTS): En el texto, incluye obligatoriamente una lista de 3 a 5 viñetas resumiendo las verdaderas quejas/posturas estructurales.
 5. COPETE OBLIGATORIO: Un subtítulo fascinante de 2 renglones introduciendo qué temática hizo explotar a la comunidad hoy.
 
-ENTREGABLE EXCLUSIVO EN FORMATO JSON:`;
+ENTREGABLE EXCLUSIVO EN FORMATO JSON O NULL:`;
 
         const prompt = `${systemPrompt}
 
 TEMA DE DEBATE Y CONTEXTO PROPORCIONADO:
 ${trendData.content}
 
-Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
+Si la temática NO CUMPLE EL FILTRO EDITORIAL ESTRICTO, responde exactamente con la palabra: null
+Si cumple el filtro temático, responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
 {
     "title": "Titular Analítico y Atraparte redactado por Ethan Hayes",
     "category": "Tendencias",
@@ -104,6 +113,13 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        // Si el modelo de IA determinó que era intrascendente, devolvió el literal null
+        if (cleanText === 'null' || cleanText === '') {
+            console.log(`        🛑 Filtro Editorial: Abortada tendencia por temática blanda intranscendente.`);
+            return null;
+        }
+
         const finalJson = JSON.parse(cleanText);
         
         // Adjuntamos las citas literales originales al JSON de salida para que sirvan de "Tweets/Comentarios" en el Frontend
