@@ -8,8 +8,27 @@ const Dashboard = ({ onBack }) => {
 
     useEffect(() => {
         fetch(`${API_BASE}/api/dashboard`)
-        fetchDashboard();
+            .then(res => res.json())
+            .then(json => {
+                setData(json);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Dashboard error:", err);
+                setLoading(false);
+            });
     }, [API_BASE]);
+
+    const forceScrapingCycle = async () => {
+        try {
+            if (!window.confirm("⚠️ ¿Estás seguro? Esto despertará al servidor y consumirá tokens de tu API de Gemini.")) return;
+            const res = await fetch(`${API_BASE}/api/force-scrape`);
+            const jsonData = await res.json();
+            alert(jsonData.message || "Señal enviada a la nube. El proceso demorará hasta 10 minutos.");
+        } catch (err) {
+            alert("Error de red: " + err.message);
+        }
+    };
 
     if(loading) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem'}}>Sincronizando con Servidor Analítico...</div>;
     if(!data) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem', color: 'red'}}>Error de conexión con Base de Datos.</div>;
