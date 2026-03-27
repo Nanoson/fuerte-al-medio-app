@@ -16,11 +16,11 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
   const [votesCount, setVotesCount] = useState(Number(article.userVotesCount) || 0);
   const [votesSum, setVotesSum] = useState(Number(article.userVotesSum) || 0);
   const [hasVoted, setHasVoted] = useState(false);
-  const [scoreInput, setScoreInput] = useState(50);
+  const [scoreInput, setScoreInput] = useState(0);
   const donutRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [previousVote, setPreviousVote] = useState(50);
+  const [previousVote, setPreviousVote] = useState(0);
   
   useEffect(() => {
       setVotesCount(Number(article.userVotesCount) || 0);
@@ -106,14 +106,22 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const getScoreFromEvent = (e) => {
-      if (!donutRef.current) return 50;
+      if (!donutRef.current) return scoreInput;
       const rect = donutRef.current.getBoundingClientRect();
       const clientX = e.clientX !== undefined ? Math.max(e.clientX, e.touches?.[0]?.clientX || 0) : e.touches[0].clientX;
-      const x = clientX - rect.left;
-      let percentage = (x / rect.width) * 100;
-      if (percentage < 0) percentage = 0;
-      if (percentage > 100) percentage = 100;
-      return Math.round(percentage);
+      const clientY = e.clientY !== undefined ? Math.max(e.clientY, e.touches?.[0]?.clientY || 0) : e.touches[0].clientY;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      
+      let angle = Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI;
+      let adjusted = angle + 90; // Shift: Top becomes 0
+      if (adjusted < 0) adjusted += 360;
+      
+      // Magnetic snapping near the extreme ends (0 or 100)
+      if (adjusted > 350) return 100;
+      if (adjusted < 10) return 0;
+      
+      return Math.round((adjusted / 360) * 100);
   };
 
   const onPointerDown = (e) => {
@@ -426,8 +434,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
 
           {/* BARÓMETRO CÍVICO DE OBJETIVIDAD  */}
           <div className="action-bar" style={{borderTop: '2px solid var(--border-color)', paddingTop: '2.5rem', marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', alignItems: 'center'}}>
-            <h4 style={{fontFamily: 'var(--font-display)', fontSize: '1.4rem', margin: 0, color: 'var(--text-main)', textAlign: 'center'}}>Barómetro Interactivo de Objetividad</h4>
-            <p style={{fontSize: '0.95rem', color: 'var(--text-secondary)', margin: 0, textAlign: 'center'}}>Deslizá tu dedo sobre la rueda para emitir o calibrar tu voto cívico instantáneamente.</p>
+            <h4 style={{fontFamily: 'var(--font-display)', fontSize: '1.4rem', margin: 0, color: 'var(--text-main)', textAlign: 'center'}}>Auditoría Cívica P2P</h4>
             
             <style>{`
                 @keyframes obj_burst_out {
@@ -437,13 +444,20 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             `}</style>
             
             {(() => {
-                const size = 200;
-                const deviation = scoreInput - 50; 
-                const color = deviation > 0 ? '#16a34a' : deviation < 0 ? '#dc2626' : '#94a3b8';
-                const radius = size / 2 - 16;
+                const size = 220;
+                // Fase 49: El color de Base es Gris si está inmaculado (Pristine). Al tocarlo, nace de Rojo (0) a Verde (100).
+                const isPristine = !hasVoted && !isDragging;
+                const activeColor = `hsl(${scoreInput * 1.2}, 75%, 45%)`;
+                const color = isPristine ? '#cbd5e1' : activeColor;
+                
+                const radius = size / 2 - 20;
                 const circumference = 2 * Math.PI * radius;
-                const arcLength = (Math.abs(deviation) / 50) * (circumference / 2);
-                const offset = circumference - arcLength;
+                const fillOffset = circumference - (scoreInput / 100) * circumference;
+                
+                // Track geometry for Thumb/Notch location exactly at the arc tip
+                const thumbAngle = (scoreInput / 100) * 360;
+                const thumbX = size/2 + radius * Math.sin(thumbAngle * Math.PI / 180);
+                const thumbY = size/2 - radius * Math.cos(thumbAngle * Math.PI / 180);
 
                 return (
                     <div 
@@ -452,22 +466,29 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
                         onPointerCancel={onPointerUp}
-                        style={{position: 'relative', width: size, height: size, touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '1rem 0'}}
+                        style={{position: 'relative', width: size, height: size, touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '1rem 0 0 0'}}
                     >
-                        <svg width={size} height={size} style={{position: 'absolute', transform: deviation < 0 ? 'scaleX(-1) rotate(-90deg)' : 'rotate(-90deg)'}}>
-                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e2e8f0" strokeWidth="20" />
-                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth="20" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{transition: isDragging ? 'none' : 'stroke-dashoffset 0.1s ease-out, stroke 0.2s ease-out'}} />
+                        <svg width={size} height={size} style={{position: 'absolute'}}>
+                            {/* Riel Fondo Espacio Gris */}
+                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f1f5f9" strokeWidth="24" />
+                            {/* Arco de Progreso de Color */}
+                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth="24" strokeDasharray={circumference} strokeDashoffset={fillOffset} strokeLinecap="round" style={{transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: isDragging ? 'none' : 'stroke-dashoffset 0.1s ease-out, stroke 0.2s ease-out'}} />
+                            {/* Muesca (Thumb) Táctil */}
+                            <circle cx={thumbX} cy={thumbY} r={14} fill="#ffffff" stroke={color} strokeWidth="6" style={{transition: isDragging ? 'none' : 'cx 0.1s ease-out, cy 0.1s ease-out, stroke 0.2s ease-out', filter: 'drop-shadow(0px 3px 5px rgba(0,0,0,0.25))'}} />
                         </svg>
+                        
                         <div style={{zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none'}}>
-                            <span style={{fontSize: '3rem', fontWeight: 900, color, fontFamily: 'var(--font-display)', lineHeight: 1}}>{scoreInput}%</span>
-                            <span style={{fontSize: '0.85rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '0.3rem'}}>{scoreInput > 50 ? 'Objetivo' : scoreInput < 50 ? 'Tendencioso' : 'Neutral'}</span>
+                            <span style={{fontSize: '3.5rem', fontWeight: 900, color: isPristine ? '#94a3b8' : color, fontFamily: 'var(--font-display)', lineHeight: 1}}>{scoreInput}%</span>
+                            <span style={{fontSize: '0.85rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '0.4rem'}}>
+                                {scoreInput > 65 ? 'Objetiva' : scoreInput < 35 ? 'Sesgada' : 'Neutral'}
+                            </span>
                         </div>
                         
-                        {/* EFECTO DE CONFETTI TWITTER TIPO PAPELITOS */}
+                        {/* EFECTO CONFETTI */}
                         {showConfetti && Array.from({length: 12}).map((_, i) => (
                             <div key={i} style={{
-                                position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', 
-                                borderRadius: '50%', background: color, pointerEvents: 'none',
+                                position: 'absolute', top: '50%', left: '50%', width: '12px', height: '12px', 
+                                borderRadius: '50%', background: activeColor, pointerEvents: 'none',
                                 '--angle': `${i * 30}deg`,
                                 animation: 'obj_burst_out 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards'
                             }} />
@@ -476,8 +497,10 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                 );
             })()}
 
+            <span style={{fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600, fontStyle: 'italic', marginBottom: '1.5rem'}}>Girá el termómetro para calificar la objetividad de la noticia</span>
+
             {hasVoted && !isDragging && (
-                <span style={{fontSize: '0.95rem', color: `hsl(${scoreInput * 1.2}, 75%, 45%)`, fontWeight: 800, marginTop: '0.5rem', animation: 'fadeIn 0.3s'}}>✓ Calibración alterada e inyectada exitosamente.</span>
+                <span style={{fontSize: '0.95rem', color: `hsl(${scoreInput * 1.2}, 75%, 45%)`, fontWeight: 800, marginTop: '-0.5rem', animation: 'fadeIn 0.3s'}}>✓ Tu escrutinio fue sincronizado en el consenso.</span>
             )}
           </div>
 
