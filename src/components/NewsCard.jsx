@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { authors } from '../data/authors.js';
 import AuthorAvatar from './AuthorAvatar';
 
@@ -17,6 +17,10 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
   const [votesSum, setVotesSum] = useState(Number(article.userVotesSum) || 0);
   const [hasVoted, setHasVoted] = useState(false);
   const [scoreInput, setScoreInput] = useState(50);
+  const donutRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [previousVote, setPreviousVote] = useState(50);
   
   useEffect(() => {
       setVotesCount(Number(article.userVotesCount) || 0);
@@ -101,19 +105,55 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-  const submitVote = async () => {
-      if (hasVoted) return;
-      setVotesCount(prev => prev + 1);
-      setVotesSum(prev => prev + Number(scoreInput));
+  const getScoreFromEvent = (e) => {
+      if (!donutRef.current) return 50;
+      const rect = donutRef.current.getBoundingClientRect();
+      const clientX = e.clientX !== undefined ? Math.max(e.clientX, e.touches?.[0]?.clientX || 0) : e.touches[0].clientX;
+      const x = clientX - rect.left;
+      let percentage = (x / rect.width) * 100;
+      if (percentage < 0) percentage = 0;
+      if (percentage > 100) percentage = 100;
+      return Math.round(percentage);
+  };
+
+  const onPointerDown = (e) => {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setIsDragging(true);
+      setScoreInput(getScoreFromEvent(e));
+      setShowConfetti(false);
+  };
+
+  const onPointerMove = (e) => {
+      if (!isDragging) return;
+      setScoreInput(getScoreFromEvent(e));
+  };
+
+  const onPointerUp = async (e) => {
+      if (!isDragging) return;
+      e.currentTarget.releasePointerCapture(e.pointerId);
+      setIsDragging(false);
+      
+      const isChange = hasVoted;
+      const scoreDelta = isChange ? (scoreInput - previousVote) : scoreInput;
+      
+      if (isChange && scoreDelta === 0) return; // No modificó el porcentaje
+
+      setPreviousVote(scoreInput);
       setHasVoted(true);
+      setShowConfetti(true);
+
+      const deltaCount = isChange ? 0 : 1;
+      setVotesCount(prev => prev + deltaCount);
+      setVotesSum(prev => prev + scoreDelta);
+
       try {
           await fetch(`${API_BASE}/api/news/${article.id}/action`, { 
               method: 'POST', 
               headers: {'Content-Type': 'application/json'}, 
-              body: JSON.stringify({type: 'vote', score: Number(scoreInput)}) 
+              body: JSON.stringify({type: 'vote', score: Number(scoreDelta), isChange}) 
           });
           if (onUpdate) onUpdate();
-      } catch (e) {}
+      } catch(e) {}
   };
 
   const submitComment = async () => {
@@ -385,32 +425,59 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
           )}
 
           {/* BARÓMETRO CÍVICO DE OBJETIVIDAD  */}
-          <div className="action-bar" style={{borderTop: '2px solid var(--border-color)', paddingTop: '2.5rem', marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', alignItems: 'flex-start'}}>
-            <h4 style={{fontFamily: 'var(--font-display)', fontSize: '1.4rem', margin: 0, color: 'var(--text-main)'}}>Barómetro Interactivo de Objetividad</h4>
+          <div className="action-bar" style={{borderTop: '2px solid var(--border-color)', paddingTop: '2.5rem', marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', alignItems: 'center'}}>
+            <h4 style={{fontFamily: 'var(--font-display)', fontSize: '1.4rem', margin: 0, color: 'var(--text-main)', textAlign: 'center'}}>Barómetro Interactivo de Objetividad</h4>
+            <p style={{fontSize: '0.95rem', color: 'var(--text-secondary)', margin: 0, textAlign: 'center'}}>Deslizá tu dedo sobre la rueda para emitir o calibrar tu voto cívico instantáneamente.</p>
             
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '600px', background: '#f8f9fa', padding: '2rem 1.5rem', borderRadius: '12px'}}>
-                {/* Visualizador de Porcentaje Dinámico */}
-                <div style={{fontSize: '2.5rem', fontWeight: 800, color: `hsl(${scoreInput * 1.2}, 75%, 45%)`, marginBottom: '1rem', fontFamily: 'var(--font-display)', lineHeight: 1}}>
-                    {scoreInput}%
-                </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '1rem', width: '100%'}}>
-                    <span style={{color: '#dc2626', fontWeight: 700, fontSize: '0.9rem', width: '80px', textAlign: 'right'}}>Tendencioso</span>
-                    <input 
-                        type="range" min="0" max="100" 
-                        value={scoreInput} 
-                        onChange={e => !hasVoted && setScoreInput(e.target.value)}
-                        style={{flex: 1, accentColor: `hsl(${scoreInput * 1.2}, 75%, 45%)`, cursor: hasVoted ? 'default' : 'pointer', pointerEvents: hasVoted ? 'none' : 'auto', opacity: hasVoted ? 0.9 : 1}}
-                    />
-                    <span style={{color: '#16a34a', fontWeight: 700, fontSize: '0.9rem', width: '80px'}}>Objetivo</span>
-                </div>
-            </div>
+            <style>{`
+                @keyframes obj_burst_out {
+                    0% { transform: rotate(var(--angle)) translateY(-30px) scale(0.5); opacity: 1; }
+                    100% { transform: rotate(var(--angle)) translateY(-100px) scale(1.2); opacity: 0; }
+                }
+            `}</style>
+            
+            {(() => {
+                const size = 200;
+                const deviation = scoreInput - 50; 
+                const color = deviation > 0 ? '#16a34a' : deviation < 0 ? '#dc2626' : '#94a3b8';
+                const radius = size / 2 - 16;
+                const circumference = 2 * Math.PI * radius;
+                const arcLength = (Math.abs(deviation) / 50) * (circumference / 2);
+                const offset = circumference - arcLength;
 
-            {!hasVoted ? (
-                <button onClick={submitVote} style={{background: 'var(--text-main)', color: '#fff', border: 'none', padding: '0.8rem 2.5rem', borderRadius: '30px', cursor: 'pointer', fontWeight: 700, fontSize: '1.05rem', marginTop: '0.5rem'}}>
-                    Emitir Voto de Ponderación
-                </button>
-            ) : (
-                <span style={{fontSize: '1rem', color: `hsl(${scoreInput * 1.2}, 75%, 45%)`, fontWeight: 800, marginTop: '0.5rem'}}>✓ Tu porcentaje fue blindado e inyectado en la red.</span>
+                return (
+                    <div 
+                        ref={donutRef}
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        onPointerCancel={onPointerUp}
+                        style={{position: 'relative', width: size, height: size, touchAction: 'none', cursor: isDragging ? 'grabbing' : 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '1rem 0'}}
+                    >
+                        <svg width={size} height={size} style={{position: 'absolute', transform: deviation < 0 ? 'scaleX(-1) rotate(-90deg)' : 'rotate(-90deg)'}}>
+                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e2e8f0" strokeWidth="20" />
+                            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth="20" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{transition: isDragging ? 'none' : 'stroke-dashoffset 0.1s ease-out, stroke 0.2s ease-out'}} />
+                        </svg>
+                        <div style={{zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none'}}>
+                            <span style={{fontSize: '3rem', fontWeight: 900, color, fontFamily: 'var(--font-display)', lineHeight: 1}}>{scoreInput}%</span>
+                            <span style={{fontSize: '0.85rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginTop: '0.3rem'}}>{scoreInput > 50 ? 'Objetivo' : scoreInput < 50 ? 'Tendencioso' : 'Neutral'}</span>
+                        </div>
+                        
+                        {/* EFECTO DE CONFETTI TWITTER TIPO PAPELITOS */}
+                        {showConfetti && Array.from({length: 12}).map((_, i) => (
+                            <div key={i} style={{
+                                position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', 
+                                borderRadius: '50%', background: color, pointerEvents: 'none',
+                                '--angle': `${i * 30}deg`,
+                                animation: 'obj_burst_out 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards'
+                            }} />
+                        ))}
+                    </div>
+                );
+            })()}
+
+            {hasVoted && !isDragging && (
+                <span style={{fontSize: '0.95rem', color: `hsl(${scoreInput * 1.2}, 75%, 45%)`, fontWeight: 800, marginTop: '0.5rem', animation: 'fadeIn 0.3s'}}>✓ Calibración alterada e inyectada exitosamente.</span>
             )}
           </div>
 
