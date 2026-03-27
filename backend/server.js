@@ -211,6 +211,11 @@ const runScrapingCycle = async () => {
             if (art.imageUrl && !clusterImage) clusterImage = art.imageUrl;
             
             const data = await scrapeArticleBody(art.link);
+            if (data.isZombie) {
+                console.log(`        🛑 Meta-Zombie Abortado: ${art.link}`);
+                art.content = ""; // Marcado para purga silente
+                continue;
+            }
             art.content = data.text;
             
             // Refuerzo pasivo: Invocar DOM Scraping de la capa og:image si falló la estructura base

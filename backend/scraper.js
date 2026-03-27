@@ -60,10 +60,12 @@ async function fetchAllNews() {
                 if (count >= 40) break;
                 
                 // Verificación de recency (Garantizar que no entren notas "zombies" de años atrás)
-                let isRecent = true;
+                let isRecent = false; // Postura Estricta: Si no tiene fecha, no confiamos en él
                 if (item.isoDate || item.pubDate) {
                     const pubTime = new Date(item.isoDate || item.pubDate).getTime();
-                    if (now - pubTime > MAX_AGE_MS) isRecent = false;
+                    if (!isNaN(pubTime) && now - pubTime <= MAX_AGE_MS) {
+                        isRecent = true;
+                    }
                 }
 
                 // Extracción Nativa de Medios RSS (Evita errores 403 al intentar hacer scraping del DOM)
@@ -120,6 +122,21 @@ async function scrapeArticleBody(url) {
         const $ = cheerio.load(data);
         
         let imageUrl = $('meta[property="og:image"]').attr('content') || null;
+
+        // FASE 38: DEEP-DOM CHRONOLOGICAL SCANNER (Anti-Zombies)
+        let articleDateStr = $('meta[property="article:published_time"]').attr('content') || 
+                             $('time').attr('datetime') ||
+                             $('meta[name="pubdate"]').attr('content') || 
+                             $('meta[itemprop="datePublished"]').attr('content');
+                             
+        if (articleDateStr) {
+            const pubTime = new Date(articleDateStr).getTime();
+            const now = Date.now();
+            const MAX_AGE_MS = 60 * 60 * 1000 * 48; // 48 horas
+            if (!isNaN(pubTime) && (now - pubTime > MAX_AGE_MS)) {
+                return { text: "", imageUrl: null, isZombie: true };
+            }
+        }
 
         // Limpiamos la mugre del HTML (Menús, Banners, Paywalls, Redes, Menús Flotantes)
         $('script, style, nav, header, footer, aside, .ad, .social, iframe, button').remove();
