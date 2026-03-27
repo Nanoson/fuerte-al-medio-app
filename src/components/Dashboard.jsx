@@ -8,15 +8,7 @@ const Dashboard = ({ onBack }) => {
 
     useEffect(() => {
         fetch(`${API_BASE}/api/dashboard`)
-            .then(res => res.json())
-            .then(json => {
-                setData(json);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Dashboard error:", err);
-                setLoading(false);
-            });
+        fetchDashboard();
     }, [API_BASE]);
 
     if(loading) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem'}}>Sincronizando con Servidor Analítico...</div>;
@@ -38,6 +30,21 @@ const Dashboard = ({ onBack }) => {
                 </h1>
                 <button onClick={onBack} style={{background: 'var(--border-color)', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: 'var(--text-main)'}}>
                     ← Volver a Portada
+                </button>
+            </div>
+
+            {/* CONTROLES DEL SERVIDOR CLOUD (RENDER) */}
+            <div style={{background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--accent)', marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <h3 style={{fontSize: '1.2rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>☁️ Arquitectura del Servidor</h3>
+                <p style={{fontSize: '0.95rem', color: 'var(--text-secondary)', margin: 0}}>URL para configurar en Cron-job.org (Tu portal en la nube actual):</p>
+                <code style={{background: '#f1f5f9', color: '#0f172a', padding: '0.8rem', borderRadius: '8px', fontSize: '0.95rem', fontWeight: 600, userSelect: 'all'}}>
+                    {API_BASE}/api/force-scrape
+                </code>
+                <button 
+                    onClick={forceScrapingCycle} 
+                    style={{background: 'var(--accent)', color: '#fff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 700, width: 'max-content', cursor: 'pointer', marginTop: '0.5rem'}}
+                >
+                    ▶ Disparar Extracción Automática Manualmente
                 </button>
             </div>
 
