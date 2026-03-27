@@ -47,8 +47,8 @@ const FeedbackWidget = ({ currentContextId = null, currentContextTitle = null })
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 style={{
-                    height: '50px', padding: '0 20px', borderRadius: '25px', background: 'var(--text-main)', 
-                    color: 'var(--bg-color)', border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                    height: '50px', padding: '0 20px', borderRadius: '25px', background: 'var(--bg-color)', 
+                    color: 'var(--text-main)', border: '1px solid var(--border-color)', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s', gap: '8px',
                     fontFamily: 'var(--font-display)', fontWeight: 'bold', fontSize: '1rem',
                     transform: isOpen ? 'scale(0.95)' : 'scale(1)'
