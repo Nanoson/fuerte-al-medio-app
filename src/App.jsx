@@ -187,7 +187,15 @@ function App() {
         if (dayA !== dayB) return dayB - dayA; 
         
         // Fase 39: Google Trends Relevance Override
-        return (Number(b.relevanceScore) || 50) - (Number(a.relevanceScore) || 50);
+        const weightA = Number(a.relevanceScore) || 50;
+        const weightB = Number(b.relevanceScore) || 50;
+        
+        if (weightA !== weightB) {
+            return weightB - weightA;
+        }
+        
+        // Desempate Cronológico: Si dos noticias tienen exactamente la misma Relevancia, gana la más fresca.
+        return timeB - timeA;
       });
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
