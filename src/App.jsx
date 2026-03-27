@@ -382,7 +382,11 @@ function App() {
       
       <main className="content">
         {showDashboard ? (
-             <Dashboard onBack={() => setShowDashboard(false)} />
+             <Dashboard 
+                 onBack={() => setShowDashboard(false)} 
+                 onSelectArticle={(id) => { setShowDashboard(false); handleSelectArticle(id); }}
+                 onAuthorSelect={(id) => { setShowDashboard(false); handleAuthorSelect(id); }}
+             />
         ) : selectedArticle ? renderSingleArticle() : (
             <>
                 {activeCategory === 'Mercados' && <MarketsWidget />}
