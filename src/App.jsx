@@ -16,8 +16,8 @@ import { authors } from './data/authors.js'
 const calculateOverlap = (textA, textB) => {
     if (!textA || !textB) return 0;
     const stops = new Set(['el','la','los','las','un','una','y','o','en','de','a','ante','con','para','por','como','que','del','al','se','su','lo','es','unos','unas','más','muy','sin','sobre','tras']);
-    const wordsA = textA.toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
-    const wordsB = textB.toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
+    const wordsA = (textA || '').toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
+    const wordsB = (textB || '').toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
     if (wordsA.length === 0 || wordsB.length === 0) return 0;
     let matches = 0;
     for (const w of wordsA) { if (wordsB.includes(w)) matches++; }
@@ -30,7 +30,7 @@ const filterDuplicates = (newsArray) => {
         let isDuplicate = false;
         for (let existing of unique) {
             const titleSimilarity = calculateOverlap(article.title, existing.title);
-            const summarySimilarity = calculateOverlap(article.summary.substring(0, 120), existing.summary.substring(0, 120));
+            const summarySimilarity = calculateOverlap((article.summary || '').substring(0, 120), (existing.summary || '').substring(0, 120));
             if (titleSimilarity >= 0.45 || summarySimilarity >= 0.45) { 
                 isDuplicate = true; break;
             }
@@ -167,7 +167,7 @@ function App() {
   const searchResults = useMemo(() => {
     if (!searchQuery) return news;
     const term = searchQuery.toLowerCase();
-    return news.filter(article => article.title.toLowerCase().includes(term) || article.summary.toLowerCase().includes(term));
+    return news.filter(article => (article.title || '').toLowerCase().includes(term) || (article.summary || '').toLowerCase().includes(term));
   }, [news, searchQuery]);
 
   const filteredByCategory = useMemo(() => {
