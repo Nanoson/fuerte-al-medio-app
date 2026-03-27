@@ -222,12 +222,15 @@ function App() {
     const locals = sortedNews.filter(a => !isForeign(a.category));
     const foreigners = sortedNews.filter(a => isForeign(a.category));
 
-    // Balanceo Independiente: Extraer aprox 7-8 de cada lado para emparejar la altura vertical del divisor final.
-    const localTop = locals.slice(0, 8);
-    const foreignTop = foreigners.slice(0, 8);
+    // Balanceo Independiente
+    // Fase 43: Bloquear estrictamente 'Tendencias' de la sección superior (Destacadas) para cuidar el editorial.
+    const localTopCandidates = locals.filter(a => activeCategory || a.category !== 'Tendencias');
+    const localTop = localTopCandidates.slice(0, 8);
+    const localRest = locals.filter(a => !localTop.includes(a));
 
-    const localRest = locals.slice(8);
-    const foreignRest = foreigners.slice(8);
+    const foreignTopCandidates = foreigners.filter(a => activeCategory || a.category !== 'Tendencias');
+    const foreignTop = foreignTopCandidates.slice(0, 8);
+    const foreignRest = foreigners.filter(a => !foreignTop.includes(a));
 
     if (activeCategory === 'NUESTRO EQUIPO') {
        return <TeamPage onAuthorSelect={handleAuthorSelect} />;
