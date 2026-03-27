@@ -187,8 +187,12 @@ function App() {
         if (dayA !== dayB) return dayB - dayA; 
         
         // Fase 39: Google Trends Relevance Override
-        const weightA = Number(a.relevanceScore) || 50;
-        const weightB = Number(b.relevanceScore) || 50;
+        let weightA = Number(a.relevanceScore) || 50;
+        let weightB = Number(b.relevanceScore) || 50;
+        
+        // Fase 42: Empujar Tendencias debajo del Hero en la Portada Principal
+        if (!activeCategory && a.category === 'Tendencias') weightA -= 35;
+        if (!activeCategory && b.category === 'Tendencias') weightB -= 35;
         
         if (weightA !== weightB) {
             return weightB - weightA;
@@ -201,8 +205,8 @@ function App() {
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
       const todayDateStr = new Date().toLocaleDateString('es-AR');
-      // Destacadas: Solo artículos de Hoy calificados como Mínimamente Relevantes (>65) por la IA.
-      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr && (Number(a.relevanceScore) || 50) >= 65).slice(0, 20);
+      // Destacadas: Solo artículos de Hoy calificados como Mínimamente Relevantes (>65) por la IA (excluyendo Tendencias para cuidar la línea editorial del Hero).
+      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.category !== 'Tendencias' && a.date === todayDateStr && (Number(a.relevanceScore) || 50) >= 65).slice(0, 20);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       
       const rawOtrasNews = activeCategory ? [] : uniqueSortedNews.filter(a => activeCategory ? false : !rawDestacadasNews.includes(a));
