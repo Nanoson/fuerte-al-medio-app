@@ -151,13 +151,25 @@ app.get('/api/dashboard', async (req, res) => {
         const topAuthors = await db.query(`SELECT target_id, count FROM analytics WHERE metric_type = 'author_click' ORDER BY count DESC LIMIT 6`);
         const recentFeedback = await db.query(`SELECT id, context_id, user_name, message, created_at FROM feedback ORDER BY created_at DESC LIMIT 10`);
         
+        // Fase 44: Agregaciones Avanzadas y Time-Series
+        const avgVote = await db.query(`SELECT AVG(objScore) as avg_score FROM articles WHERE userVotesCount > 0`);
+        const viewsByDay = await db.query(`SELECT DATE(updatedAt) as day, SUM(views) as total_views FROM articles GROUP BY DATE(updatedAt) ORDER BY day DESC LIMIT 14`);
+        const articlesByDay = await db.query(`SELECT DATE(updatedAt) as day, COUNT(*) as count FROM articles GROUP BY DATE(updatedAt) ORDER BY day DESC LIMIT 14`);
+        const topVoted = await db.query(`SELECT id, title, userVotesCount, objScore, category FROM articles WHERE userVotesCount > 0 ORDER BY userVotesCount DESC LIMIT 10`);
+
         // Sumar todos los comentarios extraídos de la columna JSON (Estimación vía longitud string o asumiendo ~1 por entrada)
-        const commentsQuery = await db.query(`SELECT comments FROM articles WHERE comments IS NOT NULL AND comments != '[]'`);
+        const commentsQuery = await db.query(`SELECT id, title, category, comments FROM articles WHERE comments IS NOT NULL AND comments != '[]'`);
         let totalComments = 0;
+        let allCommentsData = [];
         commentsQuery.rows.forEach(r => {
             const arr = typeof r.comments === 'string' ? JSON.parse(r.comments) : (r.comments || []);
             totalComments += arr.length;
+            if (arr.length > 0) {
+                allCommentsData.push({ id: r.id, title: r.title, category: r.category, commentCount: arr.length });
+            }
         });
+        allCommentsData.sort((a,b) => b.commentCount - a.commentCount);
+        const topCommented = allCommentsData.slice(0, 10);
 
         res.json({
             metrics: {
@@ -165,8 +177,13 @@ app.get('/api/dashboard', async (req, res) => {
                 views: parseInt(totalViews.rows[0].total) || 0,
                 readTime: parseInt(totalReadTime.rows[0].total) || 0,
                 votes: parseInt(totalVotes.rows[0].total) || 0,
+                avgVotePerc: Math.round(parseFloat(avgVote.rows[0].avg_score)) || 0,
                 comments: totalComments
             },
+            viewsByDay: viewsByDay.rows,
+            articlesByDay: articlesByDay.rows,
+            topVoted: topVoted.rows,
+            topCommented: topCommented,
             topArticles: topArticles.rows,
             topAuthors: topAuthors.rows,
             feedback: recentFeedback.rows
