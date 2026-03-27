@@ -6,8 +6,9 @@ require('dotenv').config();
 
 const { fetchAllNews, scrapeArticleBody } = require('./scraper');
 const { groupArticles } = require('./clustering');
-const { neutralizeArticles } = require('./neutralizer');
+const { neutralizeArticles, neutralizeTrends } = require('./neutralizer');
 const { fetchMarkets } = require('./markets');
+const { fetchSocialTrends } = require('./trends');
 
 const Parser = require('rss-parser');
 const rssParser = new Parser();
@@ -286,6 +287,50 @@ const runScrapingCycle = async () => {
             console.error(`⚠️ Error neural en cluster ${i}:`, error.message);
         }
     }
+    
+    // -------------------------------------------------------------
+    // FASE 41: BLOQUE SOCIOLÓGICO Y TENDENCIAS REDDIT
+    // -------------------------------------------------------------
+    try {
+        const globalSocialTrends = await fetchSocialTrends();
+        console.log(`\n🗣️ Procesando Cerebro Analítico de Ethan Hayes (${globalSocialTrends.length} debates en total)...`);
+        
+        for (let j = 0; j < globalSocialTrends.length; j++) {
+            let trendData = globalSocialTrends[j];
+            const finalTrend = await neutralizeTrends(trendData);
+            
+            if (finalTrend) {
+                await db.query(`
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    ON CONFLICT(topicKey) DO UPDATE SET 
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
+                `, [
+                    finalTrend.title,
+                    finalTrend.category,
+                    finalTrend.authorId || 'hayes_soc',
+                    finalTrend.biasNeutralization,
+                    new Date().toLocaleDateString('es-AR'),
+                    finalTrend.summary,
+                    finalTrend.conflictPoints,
+                    JSON.stringify(finalTrend.sources), // Guardamos los comentarios crudos aquí
+                    JSON.stringify([]),
+                    finalTrend.topicKey,
+                    new Set(finalTrend.sources.map(s => s.name)).size, 
+                    finalTrend.copete || "Métricas sociales analizadas",
+                    null, // Las tendencias no tienen porta hero images obligatorias
+                    null,
+                    finalTrend.relevanceScore || 65
+                ]);
+                console.log(`   └─✨ Informe de Tendencia Indexado: "${finalTrend.title.substring(0, 40)}..."`);
+            }
+            // Anti-Rate Limit local (Protegemos API de Gemini)
+            await new Promise(resolve => setTimeout(resolve, 4000));
+        }
+    } catch (error) {
+         console.error(`⚠️ Falla sistémica en el motor de Tendencias Sociales:`, error.message);
+    }
+
     console.log(`[${new Date().toISOString()}] 🏁 Ciclo de Recolección finalizado.`);
 };
 

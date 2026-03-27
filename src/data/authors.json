@@ -110,5 +110,12 @@
     "role": "Redactor Financiero",
     "avatar": " silhouette_16 ",
     "bio": "Encargado del cierre de mercados y cotizaciones diarias. Herrera provee el panorama informativo esencial sobre el tipo de cambio, commodities y balances corporativos, sin emitir juicios de valor sobre el rumbo económico."
+  },
+  {
+    "id": "hayes_soc",
+    "name": "Ethan Hayes",
+    "role": "Analista de Sentimiento Social",
+    "avatar": " silhouette_17 ",
+    "bio": "Sociólogo y experto británico-argentino en Big Data. Hayes monitorea el pulso irracional de las redes sociales y lo convierte en diagnóstico clínico. Fiel a la objetividad del método científico, reporta las tendencias empíricas sin tomar partido ideológico."
   }
 ]

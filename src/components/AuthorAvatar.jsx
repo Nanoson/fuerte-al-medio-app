@@ -24,7 +24,10 @@ const avatarVectors = {
     pendelton_mer: '<circle cx="12" cy="8" r="4.2" /><path d="M8 4 C10 2, 15 2, 16 5 C16 6, 17 7, 16 9 C15 7, 13 6, 8 7 Z" fill="currentColor"/><path d="M5 22 C5 16, 19 16, 19 22 Z" /><path d="M12 16 L15 22 L9 22 Z" fill="var(--bg-color)" /><path d="M11.5 17 L12.5 17 L12 21 Z" fill="currentColor"/>',
     damico_mer: '<circle cx="12" cy="7" r="4" /><path d="M7 5 C8 2, 13 1, 16 4 C18 6, 16 9, 14 9 C15 7, 13 6, 9 7 C7 9, 5 7, 7 5 Z" fill="currentColor"/><path d="M4 22 C4 15, 20 15, 20 22 Z" /><path d="M10 15 L14 15 L12 20 Z" fill="var(--bg-color)" /><path d="M11 15 L13 15 L12 19 Z" fill="currentColor"/>',
     blanc_mer: '<circle cx="12" cy="8" r="4.5" /><path d="M12 2 C7 2, 6 6, 6 10 L8 14 L10 9 L14 9 L16 14 L18 10 C18 6, 17 2, 12 2 Z" fill="currentColor"/><path d="M7 6.5 L11 6.5 M13 6.5 L17 6.5 M11 6.5 L13 6.5" stroke="var(--bg-color)" strokeWidth="1"/><path d="M6 22 C6 15, 18 15, 18 22 Z" />',
-    herrera_mer: '<circle cx="12" cy="7" r="4.5" /><path d="M6 7 A 6 6 0 0 1 18 7" fill="none" stroke="var(--bg-color)" strokeWidth="2" /><rect x="4" y="5" width="3" height="5" rx="1.5" fill="currentColor"/><rect x="17" y="5" width="3" height="5" rx="1.5" fill="currentColor"/><path d="M5 22 C5 14, 19 14, 19 22 Z" />'
+    herrera_mer: '<circle cx="12" cy="7" r="4.5" /><path d="M6 7 A 6 6 0 0 1 18 7" fill="none" stroke="var(--bg-color)" strokeWidth="2" /><rect x="4" y="5" width="3" height="5" rx="1.5" fill="currentColor"/><rect x="17" y="5" width="3" height="5" rx="1.5" fill="currentColor"/><path d="M5 22 C5 14, 19 14, 19 22 Z" />',
+    
+    // TENDENCIAS SOCIALES
+    hayes_soc: '<circle cx="12" cy="7" r="4.5" /><path d="M4 22 C4 15, 20 15, 20 22 Z" /><circle cx="10" cy="7" r="1.5" fill="var(--text-main)" stroke="var(--bg-color)" strokeWidth="0.8"/><circle cx="14" cy="7" r="1.5" fill="var(--text-main)" stroke="var(--bg-color)" strokeWidth="0.8"/><line x1="11.5" y1="7" x2="12.5" y2="7" stroke="var(--bg-color)" strokeWidth="0.8"/>'
 };
 
 const AuthorAvatar = ({ authorId, size = 60 }) => {

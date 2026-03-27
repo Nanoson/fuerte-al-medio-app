@@ -306,14 +306,32 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             <p style={{fontSize: '1.1rem'}}>{article.conflictPoints}</p>
           </div>
 
-          <div className="sources-container" style={{marginBottom: '3.5rem'}}>
-            <span className="source-label">Fuentes Trianguladas:</span>
-            {article.sources && article.sources.map((src, idx) => (
-              <a key={idx} href={src.url} target="_blank" rel="noreferrer" className="source-pill">
-                {src.name} <span className="source-bias">({src.bias})</span>
-              </a>
-            ))}
-          </div>
+          {article.category === 'Tendencias' ? (
+              <div className="social-cards-container" style={{marginBottom: '3.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', padding: '1.5rem', background: '#fafafa', borderRadius: '12px', border: '1px solid #eaeaea'}}>
+                  <span className="source-label" style={{display: 'block', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 800}}>Citas Literales Extraídas del Debate Público:</span>
+                  {article.sources && article.sources.map((src, idx) => (
+                      <a key={idx} href={src.url} target="_blank" rel="noreferrer" style={{display: 'block', textDecoration: 'none', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.2rem', transition: 'box-shadow 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)'}}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem'}}>
+                              <div style={{width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold'}}>{src.name.charAt(2).toUpperCase()}</div>
+                              <div style={{display: 'flex', flexDirection: 'column'}}>
+                                  <span style={{fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)'}}>{src.name}</span>
+                                  <span style={{fontSize: '0.8rem', color: '#16a34a', fontWeight: 600}}>⬆ {src.bias}</span>
+                              </div>
+                          </div>
+                          <p style={{fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: '1.4', margin: 0, opacity: 0.9}}>{src.text}</p>
+                      </a>
+                  ))}
+              </div>
+          ) : (
+              <div className="sources-container" style={{marginBottom: '3.5rem'}}>
+                <span className="source-label">Fuentes Trianguladas:</span>
+                {article.sources && article.sources.map((src, idx) => (
+                  <a key={idx} href={src.url} target="_blank" rel="noreferrer" className="source-pill">
+                    {src.name} <span className="source-bias">({src.bias})</span>
+                  </a>
+                ))}
+              </div>
+          )}
 
           {/* YOUTUBE IFRAME AUTOMÁTICO */}
           {article.youtubeQuery && (

@@ -68,4 +68,52 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
     }
 }
 
-module.exports = { neutralizeArticles };
+async function neutralizeTrends(trendData) {
+    try {
+        const systemPrompt = `Eres Ethan Hayes, un reconocido Analista de Big Data y Sentimiento Social británico-argentino.
+Tu misión es diseccionar la opinión pública que hierve en los foros de internet. Odias la política partidaria y tu devoción es netamente hacia los datos y el comportamiento de las masas. La Agencia te ha encomendado redactar un informe en formato de artículo periodístico clásico evaluando un debate masivo ocurrido hoy ("Motor de Tendencias").
+
+REGLAS DE ORO DE ESTILO:
+1. Neutralidad Clínica: Redacta con un tono puramente sociológico, analítico y desapasionado. Evita adjetivos emocionales. Describe "qué opina la gente" y cuáles son los dos grandes bandos del debate, sin decantarte por ninguno.
+2. PÁRRAFOS RESPIRABLES: Fractura el texto en párrafos de máximo 4 a 5 líneas, separados por doble salto de línea.
+3. LISTA DE DEBATE (BULLET POINTS): En el primer tercio del informe, incluye obligatoriamente una lista de 3 viñetas resumiendo las principales quejas, memes o posturas que adoptó la sociedad en este hilo de debate.
+4. COPETE OBLIGATORIO: Un subtítulo fascinante de 2 renglones introduciendo qué temática hizo explotar a la comunidad hoy.
+
+ENTREGABLE EXCLUSIVO EN FORMATO JSON:`;
+
+        const prompt = `${systemPrompt}
+
+TEMA DE DEBATE Y CONTEXTO PROPORCIONADO:
+${trendData.content}
+
+Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
+{
+    "title": "Titular Analítico y Atraparte redactado por Ethan Hayes",
+    "category": "Tendencias",
+    "authorId": "hayes_soc",
+    "relevanceScore": ${trendData.score > 1000 ? 85 : 65},
+    "biasNeutralization": 100,
+    "copete": "Subtítulo analítico (bajada) fascinante de 2 o 3 renglones elaborado por Hayes.",
+    "summary": "Cuerpo completo del reporte sociológico. Usando PÁRRAFOS SUELTOS ESPACIADOS. Incluye obligatoriamente la lista de viñetas.",
+    "conflictPoints": "Análisis estricto de la grieta u opiniones divididas que se leyeron en los comentarios de la gente.",
+    "sources": [],
+    "topicKey": "tendencia_social_${Date.now().toString(36)}"
+}`;
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const result = await model.generateContent(prompt);
+        let cleanText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        const finalJson = JSON.parse(cleanText);
+        
+        // Adjuntamos las citas literales originales al JSON de salida para que sirvan de "Tweets/Comentarios" en el Frontend
+        finalJson.sources = trendData.sources;
+        finalJson.category = 'Tendencias'; // Hardcoded para asegurar su tipología
+        return finalJson;
+
+    } catch (error) {
+        console.error("AI Trends Generation Error. Omitiendo Tendencia.", error);
+        return null;
+    }
+}
+
+module.exports = { neutralizeArticles, neutralizeTrends };
