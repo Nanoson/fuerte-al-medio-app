@@ -159,33 +159,37 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                                         <div key={d.day} style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%'}}>
                                             <span style={{fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 600}}>{d.total_views}</span>
                                             <div style={{width: '100%', background: 'linear-gradient(to top, #60a5fa, #3b82f6)', height: `${(d.total_views / Math.max(...data.viewsByDay.map(x => x.total_views))) * 100}%`, borderRadius: '6px 6px 0 0', marginTop: 'auto'}}></div>
-                                            <span style={{fontSize: '0.7rem', marginTop: '0.8rem', color: 'var(--text-main)'}}>{new Date(d.day+"T00:00:00").getDate()}/{new Date(d.day+"T00:00:00").getMonth()+1}</span>
+                                            <span style={{fontSize: '0.7rem', marginTop: '0.8rem', color: 'var(--text-main)'}}>{new Date(d.day).getDate()}/{new Date(d.day).getMonth()+1}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {activeModal === 'time' && (
+                        {activeModal === 'time' && data.timeByDay && (
                             <div>
-                                <h2 style={{fontFamily:'var(--font-display)', marginBottom: '1rem', color: 'var(--text-main)'}}>Métrica de Tiempo de Lectura</h2>
-                                <p style={{fontSize: '1.15rem', lineHeight: '1.7', color: 'var(--text-secondary)'}}>
-                                    Esta métrica representa el <strong>tiempo total acumulado</strong> que todos los usuarios reales han pasado leyendo notas en "Fuerte al Medio".
-                                    <br/><br/>
-                                    A diferencia de las métricas tradicionales de Google Analytics, Fuerte al Medio utiliza una interceptación de <code>IntersectionObserver</code> en React. 
-                                    El reloj solo avanza cuando el texto de la nota se encuentra visible en la pantalla activa, pausan el contador instantáneamente si el lector cambia de pestaña, minimiza la ventana o scrollea lejos del texto principal.
+                                <h2 style={{fontFamily:'var(--font-display)', marginBottom: '1rem', color: 'var(--text-main)'}}>Tiempo Global de Lectura</h2>
+                                <p style={{fontSize: '1.05rem', lineHeight: '1.6', color: 'var(--text-secondary)'}}>
+                                    Tiempo neto acumulado de interacción (scrolling activo vía <code>IntersectionObserver</code>), agrupado por la fecha de publicación original de las notas.
                                 </p>
+                                <div style={{display: 'flex', alignItems:'flex-end', gap: '8px', height: '220px', marginTop: '2rem'}}>
+                                    {data.timeByDay.slice().reverse().map(d => (
+                                        <div key={d.day} style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%'}}>
+                                            <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 600}}>{formatTime(d.total_time)}</span>
+                                            <div style={{width: '100%', background: 'linear-gradient(to top, #34d399, #10b981)', height: `${(d.total_time / Math.max(...data.timeByDay.map(x => x.total_time))) * 100}%`, borderRadius: '6px 6px 0 0', marginTop: 'auto'}}></div>
+                                            <span style={{fontSize: '0.7rem', marginTop: '0.8rem', color: 'var(--text-main)'}}>{new Date(d.day).getDate()}/{new Date(d.day).getMonth()+1}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
                         {activeModal === 'votes' && data.topVoted && (
                             <div>
                                 <h2 style={{fontFamily:'var(--font-display)', marginBottom: '2rem', color: 'var(--text-main)'}}>Auditoría Cívica (Top 10 Periodístico)</h2>
-                                <div style={{background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2rem', borderRadius: '12px', textAlign: 'center', marginBottom: '2rem'}}>
-                                    <span style={{fontSize: '1rem', color: '#475569', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '1px'}}>Promedio Global de Aprobación</span>
-                                    <div style={{fontSize: '4.5rem', fontWeight: 800, color: data.metrics.avgVotePerc > 20 ? '#16a34a' : data.metrics.avgVotePerc < -20 ? '#dc2626' : '#8b5cf6', fontFamily: 'var(--font-display)'}}>
-                                        {data.metrics.avgVotePerc > 0 ? '+' : ''}{data.metrics.avgVotePerc}%
-                                    </div>
+                                <div style={{background: '#f8fafc', border: '1px solid #e2e8f0', padding: '2rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem'}}>
+                                    <span style={{fontSize: '1rem', color: '#475569', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '1px', marginBottom: '1.5rem'}}>Promedio Global de Aprobación</span>
+                                    <DonutChart size={160} score={data.metrics.avgVotePerc} />
                                 </div>
                                 <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                                 {data.topVoted.map(art => (
@@ -194,14 +198,11 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                                             <span style={{fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', display: 'block'}}>{art.title}</span>
                                             <span style={{fontSize: '0.75rem', color: 'var(--accent)'}}>{art.category || 'General'}</span>
                                         </div>
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                                            <div style={{width: '60px', background: '#e2e8f0', height: '10px', borderRadius: '5px', overflow: 'hidden'}}>
-                                                <div style={{width: `${Math.abs(art.objScore)}%`, height: '100%', background: art.objScore > 0 ? '#16a34a' : art.objScore < 0 ? '#dc2626' : '#8b5cf6'}}></div>
-                                            </div>
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '1.5rem'}}>
                                             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: '60px'}}>
-                                                <strong style={{fontSize: '1.05rem', color: 'var(--text-main)'}}>{art.objScore > 0 ? '+' : ''}{art.objScore}%</strong>
-                                                <span style={{fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600}}>{art.userVotesCount} votos</span>
+                                                <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600}}>{art.uservotescount} votos</span>
                                             </div>
+                                            <DonutChart size={55} score={art.objScore ?? art.objscore} />
                                         </div>
                                     </div>
                                 ))}
@@ -219,7 +220,7 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                                         <span style={{fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', flex: 1, paddingRight: '1rem'}}>{art.title}</span>
                                         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#dbeafe', padding: '0.5rem 1rem', borderRadius: '8px'}}>
                                             <strong style={{color: '#1d4ed8', fontSize: '1.3rem'}}>{art.commentCount}</strong>
-                                            <span style={{fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, textTransform: 'uppercase'}}>Citas</span>
+                                            <span style={{fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, textTransform: 'uppercase'}}>Comentarios</span>
                                         </div>
                                     </div>
                                 ))}
@@ -235,7 +236,7 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                                         <div key={d.day} style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%'}}>
                                             <span style={{fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 600}}>{d.count}</span>
                                             <div style={{width: '100%', background: 'linear-gradient(to top, #fca5a5, #dc2626)', height: `${(d.count / Math.max(...data.articlesByDay.map(x => x.count))) * 100}%`, borderRadius: '6px 6px 0 0', marginTop: 'auto'}}></div>
-                                            <span style={{fontSize: '0.7rem', marginTop: '0.8rem', color: 'var(--text-main)'}}>{new Date(d.day+"T00:00:00").getDate()}/{new Date(d.day+"T00:00:00").getMonth()+1}</span>
+                                            <span style={{fontSize: '0.7rem', marginTop: '0.8rem', color: 'var(--text-main)'}}>{new Date(d.day).getDate()}/{new Date(d.day).getMonth()+1}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -244,6 +245,25 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+const DonutChart = ({ size, score }) => {
+    const rawScore = Number(score) || 0;
+    const boundedScore = Math.min(Math.max(rawScore, -100), 100);
+    const radius = size / 2 - (size * 0.1);
+    const circumference = 2 * Math.PI * radius;
+    const absoluteScore = Math.abs(boundedScore);
+    const offset = circumference - (absoluteScore / 100) * circumference;
+    const color = boundedScore > 0 ? '#16a34a' : boundedScore < 0 ? '#dc2626' : '#8b5cf6';
+    return (
+        <div style={{position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <svg width={size} height={size} style={{transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0}}>
+                <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={size * 0.08} />
+                <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={size * 0.08} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{transition: 'stroke-dashoffset 1s ease-out'}} />
+            </svg>
+            <div style={{zIndex: 1, fontSize: size * 0.25, fontWeight: 800, color, fontFamily: 'var(--font-display)'}}>{boundedScore > 0 ? '+' : ''}{Math.round(boundedScore)}%</div>
         </div>
     );
 };
