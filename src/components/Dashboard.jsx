@@ -31,8 +31,19 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
         }
     };
 
-    if(loading) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem'}}>Sincronizando con Servidor Analítico...</div>;
-    if(!data) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem', color: 'red'}}>Error de conexión con Base de Datos.</div>;
+    if(loading) return <div style={{padding: '5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-main)'}}>Sincronizando con Servidor Analítico... 📡</div>;
+    if(!data || data.error || !data.metrics) return (
+        <div style={{padding: '5rem', textAlign: 'center'}}>
+            <h2 style={{color: '#dc2626', fontFamily: 'var(--font-display)'}}>Error Crítico en Base de Datos 🚨</h2>
+            <p style={{fontSize: '1.2rem', color: 'var(--text-main)', marginTop: '1rem'}}>
+                El servidor falló al calcular las métricas maestras: <br/>
+                <code style={{background: '#fef2f2', color: '#991b1b', padding: '1rem', borderRadius: '8px', display: 'inline-block', marginTop: '1rem', fontSize: '0.9rem'}}>
+                    {data?.error || "Estructura JSON corrupta o vacía"}
+                </code>
+            </p>
+            <button onClick={onBack} style={{marginTop: '2rem', padding: '0.8rem 2rem', cursor: 'pointer', borderRadius: '8px', border: '1px solid var(--border-color)'}}>← Volver a Portada Fuerte al Medio</button>
+        </div>
+    );
 
     // Convertir segundos a formato legible
     const formatTime = (secs) => {

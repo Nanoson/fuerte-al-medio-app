@@ -151,10 +151,10 @@ app.get('/api/dashboard', async (req, res) => {
         const topAuthors = await db.query(`SELECT target_id, count FROM analytics WHERE metric_type = 'author_click' ORDER BY count DESC LIMIT 6`);
         const recentFeedback = await db.query(`SELECT id, context_id, user_name, message, created_at FROM feedback ORDER BY created_at DESC LIMIT 10`);
         
-        // Fase 44: Agregaciones Avanzadas y Time-Series (Hotfix - Mapeo de Columnas Nativas)
+        // Fase 44: Agregaciones Avanzadas y Time-Series (Hotfix - Mapeo de Columnas Nativas y DATE_TRUNC)
         const avgVote = await db.query(`SELECT CAST(SUM(userVotesSum) AS FLOAT)/SUM(userVotesCount) as avg_score FROM articles WHERE userVotesCount > 0`);
-        const viewsByDay = await db.query(`SELECT DATE(createdAt) as day, SUM(views) as total_views FROM articles GROUP BY DATE(createdAt) ORDER BY day DESC LIMIT 14`);
-        const articlesByDay = await db.query(`SELECT DATE(createdAt) as day, COUNT(*) as count FROM articles GROUP BY DATE(createdAt) ORDER BY day DESC LIMIT 14`);
+        const viewsByDay = await db.query(`SELECT DATE_TRUNC('day', createdAt) as day, SUM(views) as total_views FROM articles GROUP BY DATE_TRUNC('day', createdAt) ORDER BY day DESC LIMIT 14`);
+        const articlesByDay = await db.query(`SELECT DATE_TRUNC('day', createdAt) as day, COUNT(*) as count FROM articles GROUP BY DATE_TRUNC('day', createdAt) ORDER BY day DESC LIMIT 14`);
         const topVoted = await db.query(`SELECT id, title, userVotesCount, CAST(userVotesSum AS FLOAT)/userVotesCount as "objScore", category FROM articles WHERE userVotesCount > 0 ORDER BY userVotesCount DESC LIMIT 10`);
 
         // Sumar todos los comentarios extraídos de la columna JSON (Estimación vía longitud string o asumiendo ~1 por entrada)
