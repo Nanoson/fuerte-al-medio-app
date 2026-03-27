@@ -9,6 +9,19 @@ const { groupArticles } = require('./clustering');
 const { neutralizeArticles } = require('./neutralizer');
 const { fetchMarkets } = require('./markets');
 
+const Parser = require('rss-parser');
+const rssParser = new Parser();
+
+async function getLiveTrends() {
+    try {
+        let feed = await rssParser.parseURL('https://trends.google.com/trending/rss?geo=AR');
+        return feed.items.map(item => item.title).slice(0, 15);
+    } catch(e) {
+        console.error("Trends RSS Error:", e.message);
+        return [];
+    }
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,6 +32,13 @@ app.use(express.json());
 app.get('/api/markets', async (req, res) => {
     const data = await fetchMarkets();
     res.json(data);
+});
+
+// Endpoint Público/Cron para forzar despertar del clúster (Hibernation Bypass)
+app.get('/api/force-scrape', async (req, res) => {
+    console.log("⚡ INYECCIÓN CLOUD: Activando Scraper forzado vía /api/force-scrape (Cron-job.org)");
+    runScrapingCycle(); // Corremos el ciclo en background de manera no-bloqueante
+    res.json({ success: true, message: "Scraping cycle deployed to background workers." });
 });
 
 app.get('/api/news', async (req, res) => {
@@ -38,10 +58,10 @@ app.get('/api/news', async (req, res) => {
             topicKey: row.topickey,
             likes: row.likes,
             dislikes: row.dislikes,
-            userVotesCount: row.uservotescount,
             userVotesSum: row.uservotessum,
             comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
             importanceScore: row.importancescore,
+            relevanceScore: row.relevancescore || 50,
             copete: row.copete,
             imageUrl: row.imageurl,
             youtubeQuery: row.youtubequery,
@@ -161,7 +181,10 @@ app.get('/api/dashboard', async (req, res) => {
 const runScrapingCycle = async () => {
     console.log(`\n[${new Date().toISOString()}] 🚀 Iniciando ciclo de Recolección de Portales...`);
     let rawArticles = [];
+    let globalTrends = [];
     try {
+        globalTrends = await getLiveTrends();
+        console.log(`📈 Google Trends capturadas: ${globalTrends.length} keywords.`);
         // 1. Raspar los 24 portales masivos
         rawArticles = await fetchAllNews();
         console.log(`✅ Extracción completada. Evaluando ${rawArticles.length} titulares crudos.`);
@@ -228,17 +251,17 @@ const runScrapingCycle = async () => {
             // Forzar categoría Internacional interceptando rutas foráneas explícitas (Bypassea AI hallucinations)
             let isInternacional = targetCluster.articles.some(a => ['BBC', 'New York', 'País', 'Tercera'].some(kw => a.source.name && a.source.name.includes(kw)));
             
-            const finalNews = await neutralizeArticles(targetCluster);
+            const finalNews = await neutralizeArticles(targetCluster, globalTrends);
             if (finalNews) {
                 if (isInternacional) finalNews.category = 'Internacional';
                 let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
                 if (isMercados) finalNews.category = 'Mercados';
 
                 await db.query(`
-                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalNews.title,
                     finalNews.category,
@@ -253,7 +276,8 @@ const runScrapingCycle = async () => {
                     new Set(targetCluster.articles.map(a => a.source.name)).size,
                     finalNews.copete || finalNews.Copete || null,
                     targetCluster.clusterImage || null,
-                    finalNews.youtubeQuery || null
+                    finalNews.youtubeQuery || null,
+                    finalNews.relevanceScore || 50
                 ]);
                 console.log(`✨ Guardado en PostgreSQL [Firma: ${finalNews.authorId}]: "${finalNews.title.substring(0, 40)}..."`);
             }

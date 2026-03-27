@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const authorsData = require('../src/data/authors.json');
 
-async function neutralizeArticles(targetCluster) {
+async function neutralizeArticles(targetCluster, trendingKeywords = []) {
     try {
         const compiledContext = targetCluster.articles.map(a => 
             `\n\n--- FUENTE: ${a.source.name} (${a.source.bias}) ---\nTÍTULO: ${a.title}\nCONTENIDO EXTRAÍDO:\n${a.content}`
@@ -31,6 +31,10 @@ REGLAS DE ORO DE ESTILO (Crítico para la Redacción):
 4. PÁRRAFOS RESPIRABLES (MANDATORIO): El texto debe estar visualmente fracturado. Escribe párrafos de no más de 5 o 6 renglones de largo. Escribe saltos de línea dobles.
 5. LISTA DE HITOS (BULLET POINTS): En el primer tercio del texto, es OBLIGATORIO que incluyas una lista de 3 o 4 viñetas (usando el símbolo "-" al inicio de cada línea) resumiendo ideas concretas o datos clave.
 6. EL COPETE (BAJADA): Tienes la obligación absoluta de redactar un "copete" de 2 o 3 renglones. Es un subtítulo atrapante que va debajo del titular y resume la premisa de la noticia, SIEMPRE manteniendo la voz del autor elegido.
+7. MOTOR DE RELEVANCIA (NUEVO): Debes puntuar la importancia absoluta de esta noticia del 1 al 100 ("relevanceScore"). Tienes dos variables de contexto:
+   - MEDIA UBIQUITY: Esta noticia fue cubierta por ${targetCluster.sources.length} diarios distintos. ¡Mientras más diarios, mayor es el puntaje!
+   - GOOGLE TRENDS ARGENTINA: Las búsquedas en tendencia hoy son: [${trendingKeywords.join(' | ')}]. Si la noticia intersecta con estas tendencias, dale un BONO MASIVO de relevancia (+30 puntos).
+   Impacto estructural grave (Economía/Política) = Base Alta. Chismes banales = Base Baja. Siembra tu veredicto numérico.
 
 ENTREGABLE EXCLUSIVO EN FORMATO JSON:`;
 
@@ -44,6 +48,7 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
     "title": "Titular de Alto Impacto redactado por el autor elegido",
     "category": "Debe ser estrictamente una de: 'Política', 'Economía', 'Espectáculos', 'Deportes', 'Actualidad', 'Internacional', 'Mercados'",
     "authorId": "El ID exacto del periodista que seleccionaste (ej: 'valmont_pol', 'santillan_esp', etc.)",
+    "relevanceScore": 85,
     "biasNeutralization": 95,
     "copete": "Subtítulo periodístico (bajada) fascinante de 2 o 3 renglones elaborado por el periodista.",
     "summary": "Cuerpo completo de la nota asumiendo la voz del autor. Usando PÁRRAFOS SUELTOS ESPACIADOS (separados por doble salto de línea). Incluye obligatoriamente la lista de viñetas.",

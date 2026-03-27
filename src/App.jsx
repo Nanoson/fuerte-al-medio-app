@@ -178,20 +178,23 @@ function App() {
 
   // Mega-bloque de Procesamiento Costoso: Memoizado para no bloquear la UI al abrir una nota
   const { destacadasNews, otrasNews, sortedNews } = useMemo(() => {
-      // 1. Lógica de Clasificación Jerárquica: Prioridad Absoluta al Día Actual, luego Nivel de Cobertura
+      // 1. Lógica de Clasificación Jerárquica: Prioridad Absoluta al Día Actual, luego Motor de Relevancia (Gemini/Google Trends)
       const rawSortedNews = [...filteredByCategory].sort((a, b) => {
         const timeA = new Date((a.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
         const timeB = new Date((b.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
         const dayA = Math.floor(timeA / (1000 * 60 * 60 * 24));
         const dayB = Math.floor(timeB / (1000 * 60 * 60 * 24));
         if (dayA !== dayB) return dayB - dayA; 
-        return (Number(b.importanceScore) || 1) - (Number(a.importanceScore) || 1);
+        
+        // Fase 39: Google Trends Relevance Override
+        return (Number(b.relevanceScore) || 50) - (Number(a.relevanceScore) || 50);
       });
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
       const todayDateStr = new Date().toLocaleDateString('es-AR');
-      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr && (Number(a.importanceScore) || 1) >= 2).slice(0, 20);
+      // Destacadas: Solo artículos de Hoy calificados como Mínimamente Relevantes (>65) por la IA.
+      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr && (Number(a.relevanceScore) || 50) >= 65).slice(0, 20);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       
       const rawOtrasNews = activeCategory ? [] : uniqueSortedNews.filter(a => activeCategory ? false : !rawDestacadasNews.includes(a));
