@@ -337,6 +337,12 @@ const runScrapingCycle = async () => {
 // Frecuencia optimizada económicamente: 1 iteración completa cada 2 horas
 cron.schedule('0 */2 * * *', () => { runScrapingCycle(); });
 
+// Endpoint público para despertar a Render y forzar un scrapeo asincrónico vía servicios externos (cron-job.org)
+app.get('/api/force-scrape', async (req, res) => {
+    res.json({ success: true, message: "🚀 Ciclo Maestro de Extracción iniciado en segundo plano." });
+    runScrapingCycle();
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`===============================================`);
