@@ -187,8 +187,8 @@ function App() {
               let power = 0;
               const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
 
-              // 2. The Hegemonic Monopoly (Requisito: Top 10 exclusivo para medios grandes)
-              const majorSources = ['infobae', 'clarín', 'clarin', 'la nación', 'nacion', 'tn'];
+              // 2. The Hegemonic Monopoly (Requisito: Top 10 exclusivo para medios grandes EN SU PORTADA PRINCIPAL)
+              const majorSources = ['infobae (portada)', 'clarín (portada)', 'clarin (portada)', 'la nación (portada)', 'nacion (portada)'];
               const isMajor = art.sources && Array.isArray(art.sources) && art.sources.some(s => majorSources.some(m => (s.name || '').toLowerCase().includes(m)));
               
               if (isMajor) power += 50000; // Puso inercial masivo

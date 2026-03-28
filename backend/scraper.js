@@ -35,6 +35,11 @@ const rssSources = [
 ];
 
 const htmlSources = [
+    // BIG 3 FRONT-PAGE SCANNERS (Determina si la nota está físicamente en la Home Principal del diario)
+    { name: 'Infobae (Portada)', url: 'https://www.infobae.com/', bias: 'Centro-Derecha', type: 'General' },
+    { name: 'Clarín (Portada)', url: 'https://www.clarin.com/', bias: 'Derecha/Oposición', type: 'General' },
+    { name: 'La Nación (Portada)', url: 'https://www.lanacion.com.ar/', bias: 'Centro-Derecha/Conservador', type: 'General' },
+
     { name: 'Bloomberg Línea', url: 'https://www.bloomberglinea.com/latinoamerica/argentina/', bias: 'Mercados Globales', type: 'Economía' },
     { name: 'Olé', url: 'https://www.ole.com.ar/', bias: 'Deportes', type: 'Deportes' },
     { name: 'TyC Sports', url: 'https://www.tycsports.com/', bias: 'Deportes', type: 'Deportes' },
