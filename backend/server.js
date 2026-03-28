@@ -208,8 +208,12 @@ const runScrapingCycle = async () => {
     let rawArticles = [];
     let globalTrends = [];
     try {
-        globalTrends = await getLiveTrends();
-        console.log(`📈 Google Trends capturadas: ${globalTrends.length} keywords.`);
+        // FASE 56: Suspensión de 'Tendencias' Automáticas (Evita notas basura facilitadas por el buscador)
+        // globalTrends = await getLiveTrends();
+        globalTrends = [
+            'selección argentina', 'colapinto', 'fórmula uno', 'fórmula 1', 'franco colapinto', 'amistosos de fútbol internacional'
+        ];
+        console.log(`📈 Tendencias Manuales Inyectadas (Overrides Fijos): ${globalTrends.join(', ')}`);
         // 1. Raspar los 24 portales masivos
         rawArticles = await fetchAllNews();
         console.log(`✅ Extracción completada. Evaluando ${rawArticles.length} titulares crudos.`);
@@ -225,8 +229,17 @@ const runScrapingCycle = async () => {
 
     let clusters = groupArticles(rawArticles);
     
-    // Jerarquía Matemática: Priorizar por VOLUMEN DE FUENTES ÚNICAS DISTINTAS impactando la matriz de relevancia
+    // FASE 56: GARANTÍA ABSOLUTA DE LAS PORTADAS DE LOS 3 GRANDES
+    // Jerarquía Matemática: Las notas marcadas como `(Portada)` tienen Prioridad Cero sobre todo lo demás para ser Ingeridas por la IA.
     clusters.sort((a,b) => {
+        const aHasPortada = a.articles.some(art => art.source?.name?.includes('(Portada)'));
+        const bHasPortada = b.articles.some(art => art.source?.name?.includes('(Portada)'));
+        
+        // Prioridad 1: Que esté físicamente en la Portada de los diarios grandes (Infobae, Clarín, La Nación)
+        if (aHasPortada && !bHasPortada) return -1;
+        if (!aHasPortada && bHasPortada) return 1;
+
+        // Prioridad 2: Volumen de Fuentes (Como siempre)
         const uniqueA = new Set(a.articles.map(art => art.source.name)).size;
         const uniqueB = new Set(b.articles.map(art => art.source.name)).size;
         if (uniqueB !== uniqueA) return uniqueB - uniqueA;

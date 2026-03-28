@@ -229,8 +229,9 @@ function App() {
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
-      // Destacadas: Se alimenta directamente de los líderes matemáticos (Garantizando el monopolio de fuentes hegemónicas y la frescura de 12hs).
-      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.slice(0, 20);
+      // FASE 56: BARRERA ESTRICTA DE "SÓLO HOY" EN EL HERO
+      const todayDateStr = new Date().toLocaleDateString('es-AR');
+      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr).slice(0, 16);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       
       const rawOtrasNews = activeCategory ? [] : uniqueSortedNews.filter(a => activeCategory ? false : !rawDestacadasNews.includes(a));
