@@ -201,13 +201,12 @@ function App() {
               
               if (isMajor) power += 50000; // Peso inercial masivo
 
-              // 3. Rotación Estricta y Precipicio Temporal (Hero & Top 5)
+              // 3. FASE 54 (GUILLOTINA V4): Extradición Absoluta de 12 Horas para la Portada
+              // El usuario ordenó Tolerancia Cero con notas de ayer en la parte superior. Las posiciones "Hero" deben latir contínuamente.
               if (ageH <= 12) {
-                  power += 20000; // Mantiene el Top 5 monopolizado intacto
-              } else if (ageH > 12 && ageH <= 15) {
-                  power += 5000;  // Empieza a caer (Cede la corona a notas más frescas)
-              } else if (ageH > 15) {
-                  power -= 35000; // PRECIPICIO: Si cruzó las 16hs y nadie trajo nada mejor, castigarlo brutalmente para que medios secundarios frescos puedan ascender y destronar la previa vieja.
+                  power += 20000; // Premia la frescura extrema en el Top 5 monopolizado
+              } else {
+                  power -= 150000; // GUILLOTINA: Explotar matemáticamente cualquier bono hegemónico. Si pasó las 12hs, será sepultada debajo de cualquier nota fresca menor. 
               }
 
               // 4. Métrica Orgánica Acumulativa
