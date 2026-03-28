@@ -201,12 +201,14 @@ function App() {
               
               if (isMajor) power += 50000; // Peso inercial masivo
 
-              // 3. FASE 54 (GUILLOTINA V4): Extradición Absoluta de 12 Horas para la Portada
-              // El usuario ordenó Tolerancia Cero con notas de ayer en la parte superior. Las posiciones "Hero" deben latir contínuamente.
+              // 3. Jefe Editorial Inteligente (Rotación Orgánica de Portada)
+              // Nunca expulsar ciegamente a una nota Hegemónica porque habilitaría a fuentes de relleno ("payasadas") a ocupar el Hero.
+              // En su lugar, el algoritmo premia masivamente (+20k) a las notas Hegemónicas frescas (<12hs).
+              // Esto provoca que una NUEVA nota de Clarín asuma naturalmente el puesto #1 (70k pts), empujando a la VIEJA nota de Clarín (50k pts) al puesto #2 o #3 orgánicamente.
               if (ageH <= 12) {
-                  power += 20000; // Premia la frescura extrema en el Top 5 monopolizado
-              } else {
-                  power -= 150000; // GUILLOTINA: Explotar matemáticamente cualquier bono hegemónico. Si pasó las 12hs, será sepultada debajo de cualquier nota fresca menor. 
+                  power += 20000; 
+              } else if (ageH > 12 && ageH <= 24) {
+                  power += 5000;
               }
 
               // 4. Métrica Orgánica Acumulativa
