@@ -178,35 +178,48 @@ function App() {
 
   // Mega-bloque de Procesamiento Costoso: Memoizado para no bloquear la UI al abrir una nota
   const { destacadasNews, otrasNews, sortedNews } = useMemo(() => {
-      // 1. Lógica de Clasificación Jerárquica: Prioridad Absoluta al Día Actual, luego Motor de Relevancia (Gemini/Google Trends)
-      const rawSortedNews = [...filteredByCategory].sort((a, b) => {
-        const timeA = new Date((a.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
-        const timeB = new Date((b.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
-        const dayA = Math.floor(timeA / (1000 * 60 * 60 * 24));
-        const dayB = Math.floor(timeB / (1000 * 60 * 60 * 24));
-        if (dayA !== dayB) return dayB - dayA; 
-        
-        // Fase 39: Google Trends Relevance Override
-        let weightA = Number(a.relevanceScore) || 50;
-        let weightB = Number(b.relevanceScore) || 50;
-        
-        // Fase 42: Empujar Tendencias debajo del Hero en la Portada Principal
-        if (!activeCategory && a.category === 'Tendencias') weightA -= 35;
-        if (!activeCategory && b.category === 'Tendencias') weightB -= 35;
-        
-        if (weightA !== weightB) {
-            return weightB - weightA;
-        }
-        
-        // Desempate Cronológico: Si dos noticias tienen exactamente la misma Relevancia, gana la más fresca.
-        return timeB - timeA;
+      // 1. Algoritmo Dinámico de Deterioro Temporal (Time Decay + Hegemonic Filtering)
+      const rawSortedNews = [...filteredByCategory].sort((a,b) => {
+          const calculatePower = (art) => {
+              // 1. Desterrar Tendencias sociales abajo de todo
+              if (art.category === 'Tendencias') return -10000;
+
+              let power = 0;
+              const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
+
+              // 2. The Hegemonic Monopoly (Requisito: Top 10 exclusivo para medios grandes)
+              const majorSources = ['infobae', 'clarín', 'clarin', 'la nación', 'nacion', 'tn'];
+              const isMajor = art.sources && Array.isArray(art.sources) && art.sources.some(s => majorSources.some(m => (s.name || '').toLowerCase().includes(m)));
+              
+              if (isMajor) power += 50000; // Puso inercial masivo
+
+              // 3. Rotación Estricta de 12 Horas (Hero & Top 5)
+              if (ageH <= 12) {
+                  power += 20000; // Garantiza que las notas <12h de diarios grandes monopolicen el Hero (70,000 pts)
+              } else if (ageH > 12 && ageH <= 24) {
+                  power += 5000; // Aún relevantes, pero ceden asimétricamente el Hero a notas más frescas
+              }
+
+              // 4. Métrica Orgánica (Trascendencia + Degradación Continua)
+              power += (art.importanceScore || 1) * 500;
+              power -= ageH * 150; // Cada hora que envejece pierde poder constante
+
+              // 5. Destierro de Soft-News Críticas o Basura Autónoma
+              const lowTitle = (art.title || '').toLowerCase();
+              if (lowTitle.includes('quiniela') || lowTitle.includes('quini 6') || lowTitle.includes('loto') || lowTitle.includes('telechino') || lowTitle.includes('horóscopo') || lowTitle.includes('sorpresa') || lowTitle.includes('café frio') || lowTitle.includes('cafe frio')) {
+                  power -= 90000; // Literalmente hundido al fondo absoluto del DOM
+              }
+
+              return power;
+          };
+
+          return calculatePower(b) - calculatePower(a);
       });
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
-      const todayDateStr = new Date().toLocaleDateString('es-AR');
-      // Destacadas: Solo artículos de Hoy calificados como Mínimamente Relevantes (>65) por la IA (excluyendo Tendencias para cuidar la línea editorial del Hero).
-      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.category !== 'Tendencias' && a.date === todayDateStr && (Number(a.relevanceScore) || 50) >= 65).slice(0, 20);
+      // Destacadas: Se alimenta directamente de los líderes matemáticos (Garantizando el monopolio de fuentes hegemónicas y la frescura de 12hs).
+      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.slice(0, 20);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       
       const rawOtrasNews = activeCategory ? [] : uniqueSortedNews.filter(a => activeCategory ? false : !rawDestacadasNews.includes(a));
