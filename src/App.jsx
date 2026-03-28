@@ -182,32 +182,42 @@ function App() {
       const rawSortedNews = [...filteredByCategory].sort((a,b) => {
           const calculatePower = (art) => {
               // 1. Desterrar Tendencias sociales abajo de todo
-              if (art.category === 'Tendencias') return -10000;
+              if (art.category === 'Tendencias') return -100000;
 
-              let power = 0;
               const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
 
-              // 2. The Hegemonic Monopoly (Requisito: Top 10 exclusivo para medios grandes EN SU PORTADA PRINCIPAL)
+              // FASE 52: BIFURCACIÓN DE SECCIONES (Fuerza Hiper-Cronológica)
+              // Al estar dentro de una categoría (ej. Deportes), la frescura aniquila a las jerarquías de diarios. Una crónica recien salida SIEMPRE le gana a la "previa" de un hegemónico de hace 16 horas.
+              if (activeCategory) {
+                  return (-ageH * 10000) + ((art.importanceScore || 1) * 100);
+              }
+
+              // PORTADA GLOBAL (Leyes Hegemónicas Conservadoras)
+              let power = 0;
+
+              // 2. The Hegemonic Monopoly (Top 10 exclusivo para medios grandes EN SU PORTADA PRINCIPAL)
               const majorSources = ['infobae (portada)', 'clarín (portada)', 'clarin (portada)', 'la nación (portada)', 'nacion (portada)'];
               const isMajor = art.sources && Array.isArray(art.sources) && art.sources.some(s => majorSources.some(m => (s.name || '').toLowerCase().includes(m)));
               
-              if (isMajor) power += 50000; // Puso inercial masivo
+              if (isMajor) power += 50000; // Peso inercial masivo
 
-              // 3. Rotación Estricta de 12 Horas (Hero & Top 5)
+              // 3. Rotación Estricta y Precipicio Temporal (Hero & Top 5)
               if (ageH <= 12) {
-                  power += 20000; // Garantiza que las notas <12h de diarios grandes monopolicen el Hero (70,000 pts)
-              } else if (ageH > 12 && ageH <= 24) {
-                  power += 5000; // Aún relevantes, pero ceden asimétricamente el Hero a notas más frescas
+                  power += 20000; // Mantiene el Top 5 monopolizado intacto
+              } else if (ageH > 12 && ageH <= 15) {
+                  power += 5000;  // Empieza a caer (Cede la corona a notas más frescas)
+              } else if (ageH > 15) {
+                  power -= 35000; // PRECIPICIO: Si cruzó las 16hs y nadie trajo nada mejor, castigarlo brutalmente para que medios secundarios frescos puedan ascender y destronar la previa vieja.
               }
 
-              // 4. Métrica Orgánica (Trascendencia + Degradación Continua)
+              // 4. Métrica Orgánica Acumulativa
               power += (art.importanceScore || 1) * 500;
-              power -= ageH * 150; // Cada hora que envejece pierde poder constante
+              power -= ageH * 250; 
 
               // 5. Destierro de Soft-News Críticas o Basura Autónoma
               const lowTitle = (art.title || '').toLowerCase();
               if (lowTitle.includes('quiniela') || lowTitle.includes('quini 6') || lowTitle.includes('loto') || lowTitle.includes('telechino') || lowTitle.includes('horóscopo') || lowTitle.includes('sorpresa') || lowTitle.includes('café frio') || lowTitle.includes('cafe frio')) {
-                  power -= 90000; // Literalmente hundido al fondo absoluto del DOM
+                  power -= 200000; // Literalmente hundido al núcleo terrestre
               }
 
               return power;
