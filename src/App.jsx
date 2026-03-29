@@ -229,8 +229,8 @@ function App() {
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
-      // FASE 56: BARRERA ESTRICTA DE "SÓLO HOY" EN EL HERO
-      const todayDateStr = new Date().toLocaleDateString('es-AR');
+      // FASE 56/59: BARRERA ESTRICTA DE "SÓLO HOY" EN EL HERO (Sincronizado a ARG Timezone)
+      const todayDateStr = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
       const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr).slice(0, 16);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       

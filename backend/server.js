@@ -208,12 +208,10 @@ const runScrapingCycle = async () => {
     let rawArticles = [];
     let globalTrends = [];
     try {
-        // FASE 56: Suspensión de 'Tendencias' Automáticas (Evita notas basura facilitadas por el buscador)
+        // FASE 56/59: Suspensión TOTAL de Tendencias Automáticas Requerida por el Editor
         // globalTrends = await getLiveTrends();
-        globalTrends = [
-            'selección argentina', 'colapinto', 'fórmula uno', 'fórmula 1', 'franco colapinto', 'amistosos de fútbol internacional'
-        ];
-        console.log(`📈 Tendencias Manuales Inyectadas (Overrides Fijos): ${globalTrends.join(', ')}`);
+        globalTrends = []; 
+        console.log(`📈 Tendencias Manuales Suspendidas (Cobertura Universal Activada).`);
         // 1. Raspar los 24 portales masivos
         rawArticles = await fetchAllNews();
         console.log(`✅ Extracción completada. Evaluando ${rawArticles.length} titulares crudos.`);
@@ -305,7 +303,7 @@ const runScrapingCycle = async () => {
                     finalNews.category,
                     finalNews.authorId || 'valmont_pol',
                     finalNews.biasNeutralization,
-                    new Date().toLocaleDateString('es-AR'),
+                    new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
                     finalNews.summary,
                     finalNews.conflictPoints,
                     JSON.stringify(finalNews.sources),
@@ -325,8 +323,10 @@ const runScrapingCycle = async () => {
     }
     
     // -------------------------------------------------------------
-    // FASE 41: BLOQUE SOCIOLÓGICO Y TENDENCIAS REDDIT
+    // FASE 41/59: BLOQUE SOCIOLÓGICO Y TENDENCIAS REDDIT (SUSPENDIDO)
+    // El Jefe Editorial solicitó suspender temporalmente el scraping empírico de Redes Sociales.
     // -------------------------------------------------------------
+    /*
     try {
         const globalSocialTrends = await fetchSocialTrends();
         console.log(`\n🗣️ Procesando Cerebro Analítico de Ethan Hayes (${globalSocialTrends.length} debates en total)...`);
@@ -346,7 +346,7 @@ const runScrapingCycle = async () => {
                     finalTrend.category,
                     finalTrend.authorId || 'hayes_soc',
                     finalTrend.biasNeutralization,
-                    new Date().toLocaleDateString('es-AR'),
+                    new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
                     finalTrend.summary,
                     finalTrend.conflictPoints,
                     JSON.stringify(finalTrend.sources), // Guardamos los comentarios crudos aquí
@@ -366,6 +366,7 @@ const runScrapingCycle = async () => {
     } catch (error) {
          console.error(`⚠️ Falla sistémica en el motor de Tendencias Sociales:`, error.message);
     }
+    */
 
     console.log(`[${new Date().toISOString()}] 🏁 Ciclo de Recolección finalizado.`);
 };
