@@ -380,8 +380,16 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                           padding: '1.5rem', margin: '2rem 0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
                       }}>
                           <div style={{marginBottom: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem'}}>
-                              <span style={{display: 'block', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.2rem'}}>Fuerte Al Medio</span>
-                              <span style={{display: 'block', fontSize: '0.8rem', color: 'var(--accent)', fontStyle: 'italic', fontWeight: 600, opacity: 0.85}}>Resumen objetivo y neutral de la nota.</span>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem'}}>
+                                  <svg width="26" height="20" viewBox="0 0 32 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <rect x="2" y="2" width="28" height="17" rx="2" ry="2" />
+                                      <path d="M12 23h8" />
+                                      <path d="M16 19v4" />
+                                      <text x="16" y="14" textAnchor="middle" fontSize="10.5" fontWeight="900" fontFamily="sans-serif" fill="var(--accent)" strokeWidth="0">VAR</text>
+                                  </svg>
+                                  <span style={{fontSize: '0.95rem', color: 'var(--accent)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', paddingTop: '2px'}}>El VAR de Fuerte Al Medio</span>
+                              </div>
+                              <span style={{display: 'block', fontSize: '0.85rem', color: 'var(--accent)', fontStyle: 'italic', fontWeight: 600, opacity: 0.85}}>Un resumen objetivo y neutral de este artículo.</span>
                           </div>
                           <ul style={{listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem'}}>
                               {bullets.map((b, i) => (
