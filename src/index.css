@@ -199,26 +199,13 @@ a {
   flex-direction: column;
 }
 
-/* Featured Article (Hero) styling */
+/* Column-Specific Article Styling */
 @media (min-width: 992px) {
-  .article-card:first-child {
-    grid-column: 1 / 2;
-    grid-row: 1 / span 2;
-    padding-right: 2rem;
-    border-right: 1px solid var(--border-color);
-  }
-  
-  /* Smaller side articles styling */
-  .article-card:not(:first-child) {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .article-card:not(:first-child) .article-title {
-    font-size: 1.6rem;
+  .side-column .article-card .article-title {
+    font-size: 1.6em;
   }
 
-  .article-card:not(:first-child) .article-summary {
+  .side-column .article-card .article-summary {
     font-size: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;

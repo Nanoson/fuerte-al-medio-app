@@ -438,7 +438,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             <p style={{fontSize: '1.1rem'}}>{article.conflictPoints}</p>
           </div>
 
-              <div className="sources-container" style={{marginBottom: '3.5rem'}}>
+              <div className="sources-container" style={{marginTop: '0.5rem', paddingBottom: '0.5rem'}}>
                 <span className="source-label">Fuentes Trianguladas:</span>
                 {article.sources && article.sources.map((src, idx) => (
                   <a key={idx} href={src.url} target="_blank" rel="noreferrer" className="source-pill">
