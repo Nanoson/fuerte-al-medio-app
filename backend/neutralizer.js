@@ -57,7 +57,7 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
     "topicKey": "ID corto sin espacios para este evento, ej. 'milei_decretos_2026'"
 }`;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
         return JSON.parse(cleanText);
@@ -110,7 +110,7 @@ Si cumple el filtro temático, responde ÚNICAMENTE con un JSON válido usando e
     "topicKey": "tendencia_social_${Date.now().toString(36)}"
 }`;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         let cleanText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
         
