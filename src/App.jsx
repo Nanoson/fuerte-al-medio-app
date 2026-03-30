@@ -87,6 +87,21 @@ function App() {
             if (selectedArticle) {
                 const freshArticle = data.find(a => String(a.id) === String(selectedArticle.id));
                 if (freshArticle) setSelectedArticle(freshArticle);
+            } else if (typeof window !== 'undefined') {
+                // FASE 72: Deep-Linking Parser para Cold Boots (WhatsApp/Telegram clicks)
+                const params = new URLSearchParams(window.location.search);
+                const qArticle = params.get('article');
+                const qCat = params.get('cat');
+                const qSearch = params.get('search');
+                
+                if (qArticle) {
+                    const linkedTarget = data.find(a => String(a.id) === String(qArticle));
+                    if (linkedTarget) setSelectedArticle(linkedTarget);
+                } else if (qCat) {
+                    setActiveCategory(qCat);
+                } else if (qSearch) {
+                    setSearchQuery(qSearch);
+                }
             }
         }
       })
