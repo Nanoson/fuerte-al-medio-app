@@ -114,8 +114,22 @@
   {
     "id": "hayes_soc",
     "name": "Ethan Hayes",
-    "role": "Analista de Sentimiento Social",
+    "role": "Columnista de Cultura Hacker e Internet",
     "avatar": " silhouette_17 ",
-    "bio": "Sociólogo y experto británico-argentino en Big Data. Hayes monitorea el pulso irracional de las redes sociales y lo convierte en diagnóstico clínico. Fiel a la objetividad del método científico, reporta las tendencias empíricas sin tomar partido ideológico."
+    "bio": "Entiende el latido de la red. Si se viralizó, Ethan ya analizó la estructura de sus datos. Sarcástico y rápido, experto en Big Tech drama y cibercultura."
+  },
+  {
+    "id": "goldstein_tec",
+    "name": "Rachel Goldstein",
+    "role": "Directora de Inteligencia Artificial y Hardware",
+    "avatar": " silhouette_4 ",
+    "bio": "Académica y fría. De origen judío-británico, Rachel exige rigor técnico absoluto. Especialista en la arquitectura de Silicon Valley, modelos fundacionales y semiconductores. Jamás utiliza buzzwords publicitarios."
+  },
+  {
+    "id": "steffani_tec",
+    "name": "Bruno Steffani",
+    "role": "Especialista Cripto y Maximalista",
+    "avatar": " silhouette_13 ",
+    "bio": "Maximalista de Bitcoin de pura cepa. Pro-descentralización, cypherpunk y analista duro de Finanzas Descentralizadas (DeFi) frente al sistema fiduciario tradicional."
   }
 ]

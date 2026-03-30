@@ -438,6 +438,16 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                       elements.push(renderBulletGroup(currentBullets, 'end'));
                   }
 
+                  // Fase 78: Cita formal y directa para ecosistema Tech/Cripto
+                  if (article.category === 'Tecnología' && article.sources && article.sources.length > 0) {
+                      const primarySource = article.sources[0];
+                      elements.push(
+                          <p key="tech-source-link" style={{fontSize: '1.05rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '2rem', padding: '1rem', background: 'rgba(128,128,128,0.05)', borderRadius: '6px', borderLeft: '3px solid var(--text-secondary)'}}>
+                              Fuente: <a href={primarySource.url} target="_blank" rel="noreferrer" style={{color: 'var(--accent)', textDecoration: 'underline'}}>{primarySource.name}</a>
+                          </p>
+                      );
+                  }
+
                   return elements;
               })()}
           </div>

@@ -33,7 +33,18 @@ const rssSources = [
     
     // WALL STREET & FINANZAS GLOBALES
     { name: 'Yahoo Finance USA', url: 'https://finance.yahoo.com/news/rssindex', bias: 'Financiero', category: 'Economía' },
-    { name: 'Financial Times', url: 'https://www.ft.com/rss/home/us', bias: 'Financiero', category: 'Internacional' }
+    { name: 'Financial Times', url: 'https://www.ft.com/rss/home/us', bias: 'Financiero', category: 'Internacional' },
+
+    // TECNOLOGÍA & CRIPTO
+    { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', bias: 'Silicon Valley', category: 'Tecnología' },
+    { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', bias: 'Consumo/Tech', category: 'Tecnología' },
+    { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', bias: 'Técnico', category: 'Tecnología' },
+    { name: 'Wired', url: 'https://www.wired.com/feed/rss', bias: 'Cultura/Tech', category: 'Tecnología' },
+    { name: 'Hacker News', url: 'https://hnrss.org/newest', bias: 'Cypherpunk/Dev', category: 'Tecnología' },
+    { name: 'a16z', url: 'https://a16z.com/feed/', bias: 'Venture Capital', category: 'Tecnología' },
+    { name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', bias: 'Cripto', category: 'Tecnología' },
+    { name: 'Cointelegraph', url: 'https://cointelegraph.com/rss', bias: 'Cripto', category: 'Tecnología' },
+    { name: 'The Block', url: 'https://www.theblock.co/rss.xml', bias: 'Cripto/Finanzas', category: 'Tecnología' }
 ];
 
 const htmlSources = [

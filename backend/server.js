@@ -284,14 +284,21 @@ const runScrapingCycle = async () => {
         targetCluster.clusterImage = clusterImage;
 
         try {
-            // Forzar categoría Internacional interceptando rutas foráneas explícitas (Bypassea AI hallucinations)
+            // Interceptores de Categoría: Fuerzan el Vertical si la IA falla
             let isInternacional = targetCluster.articles.some(a => ['BBC', 'New York', 'País', 'Tercera'].some(kw => a.source.name && a.source.name.includes(kw)));
+            let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
             
+            // Fase 78: Interceptor Tecnología & Cripto
+            let isTecnologia = targetCluster.articles.some(a => 
+                ['TechCrunch', 'The Verge', 'Ars Technica', 'Wired', 'Hacker News', 'a16z', 'CoinDesk', 'Cointelegraph', 'The Block'].some(kw => a.source.name && a.source.name.includes(kw)) ||
+                ['bitcoin', 'cripto', 'crypto', 'ethereum', 'tecnología', 'inteligencia artificial'].some(kw => a.title.toLowerCase().includes(kw))
+            );
+
             const finalNews = await neutralizeArticles(targetCluster, globalTrends);
             if (finalNews) {
                 if (isInternacional) finalNews.category = 'Internacional';
-                let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
                 if (isMercados) finalNews.category = 'Mercados';
+                if (isTecnologia) finalNews.category = 'Tecnología';
 
                 await db.query(`
                     INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore, imagecaption)
