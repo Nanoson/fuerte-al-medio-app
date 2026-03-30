@@ -32,7 +32,7 @@ REGLAS DE ORO DE ESTILO (Crítico para la Redacción):
 5. LISTA DE HITOS (BULLET POINTS): En el primer tercio del texto, es OBLIGATORIO que incluyas una lista de 3 o 4 viñetas (usando el símbolo "-" al inicio de cada línea) resumiendo ideas concretas o datos clave.
 6. EL COPETE (BAJADA): Tienes la obligación absoluta de redactar un "copete" de 2 o 3 renglones. Es un subtítulo atrapante que va debajo del titular y resume la premisa de la noticia, SIEMPRE manteniendo la voz del autor elegido.
 7. MOTOR DE RELEVANCIA (NUEVO): Debes puntuar la importancia absoluta de esta noticia del 1 al 100 ("relevanceScore"). Tienes dos variables de contexto:
-   - MEDIA UBIQUITY: Esta noticia fue cubierta por ${targetCluster.sources.length} diarios distintos. ¡Mientras más diarios, mayor es el puntaje!
+   - MEDIA UBIQUITY: Esta noticia fue cubierta por ${new Set(targetCluster.articles.map(a => a.source.name)).size} diarios distintos. ¡Mientras más diarios, mayor es el puntaje!
    - GOOGLE TRENDS ARGENTINA: Las búsquedas en tendencia hoy son: [${trendingKeywords.join(' | ')}]. Si la noticia intersecta con estas tendencias, dale un BONO MASIVO de relevancia (+30 puntos).
    Impacto estructural grave (Economía/Política) = Base Alta. Chismes banales = Base Baja. Siembra tu veredicto numérico.
 
