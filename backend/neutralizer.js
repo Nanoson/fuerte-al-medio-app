@@ -55,7 +55,8 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
     "summary": "Cuerpo completo de la nota asumiendo la voz del autor. Usando PÁRRAFOS SUELTOS ESPACIADOS (separados por doble salto de línea). Incluye obligatoriamente la lista de viñetas.",
     "conflictPoints": "Análisis rápido y quirúrgico de cómo/en qué difirieron los medios originales respecto al evento.",
     "sources": [ { "name": "Nombre exacto del Medio", "url": "Link original de validación", "bias": "Ideología registrada" } ],
-    "topicKey": "ID corto sin espacios para este evento, ej. 'milei_decretos_2026'"
+    "topicKey": "ID corto sin espacios para este evento, ej. 'milei_decretos_2026'",
+    "imageCaption": "Epígrafe fotográfico inmersivo (1 oración) escrito bajo tu pluma y estilo, relacionado al tema abordado."
 }`;
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });

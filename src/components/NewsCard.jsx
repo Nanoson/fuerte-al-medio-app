@@ -346,11 +346,20 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
 
       {/* 2. PORTADA HD (Baja debajo del copete) */}
       {article.imageUrl && !isCompact && (
-          <div 
-            onClick={() => !isFullView && onSelect && onSelect(article)} 
-            style={{width: '100%', height: isHero || isFullView ? '450px' : '220px', overflow: 'hidden', borderRadius: '8px', marginBottom: '1.5rem', cursor: !isFullView ? 'pointer' : 'default', background: '#f5f5f5'}}
-          >
-              <img src={article.imageUrl} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+          <div style={{marginBottom: '1.5rem'}}>
+              <div 
+                onClick={() => !isFullView && onSelect && onSelect(article)} 
+                style={{width: '100%', height: isHero || isFullView ? '450px' : '220px', overflow: 'hidden', borderRadius: '8px', cursor: !isFullView ? 'pointer' : 'default', background: '#f5f5f5', marginBottom: (article.imagecaption || article.imageCaption) ? '0.6rem' : '0'}}
+              >
+                  <img src={article.imageUrl} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+              </div>
+              {(article.imagecaption || article.imageCaption) && (
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                      <span style={{display: 'block', maxWidth: '85%', fontSize: '0.86rem', color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'right', borderRight: '3px solid var(--accent)', paddingRight: '0.6rem', lineHeight: '1.4'}}>
+                          {article.imagecaption || article.imageCaption}
+                      </span>
+                  </div>
+              )}
           </div>
       )}
       
