@@ -64,7 +64,7 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
 
     } catch (error) {
         console.error("AI Generation / Parsing Error. Omitiendo Cluster.", error);
-        return null; // Ocultamos crasheos devolviendo null
+        throw error; // FASE 66: Elevado para diagnóstico transparente en /api/debug-scraper
     }
 }
 
@@ -129,7 +129,7 @@ Si cumple el filtro temático, responde ÚNICAMENTE con un JSON válido usando e
 
     } catch (error) {
         console.error("AI Trends Generation Error. Omitiendo Tendencia.", error);
-        return null;
+        throw error;
     }
 }
 
