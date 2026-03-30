@@ -379,7 +379,10 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                           background: 'var(--card-bg)', border: '1px solid var(--accent)', borderRadius: '12px',
                           padding: '1.5rem', margin: '2rem 0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
                       }}>
-                          <span style={{display: 'block', fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem'}}>Puntos Clave del Debate</span>
+                          <div style={{marginBottom: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem'}}>
+                              <span style={{display: 'block', fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.2rem'}}>Fuerte Al Medio</span>
+                              <span style={{display: 'block', fontSize: '0.8rem', color: 'var(--accent)', fontStyle: 'italic', fontWeight: 600, opacity: 0.85}}>Resumen objetivo y neutral de la nota.</span>
+                          </div>
                           <ul style={{listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem'}}>
                               {bullets.map((b, i) => (
                                   <li key={`b-${i}`} style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
