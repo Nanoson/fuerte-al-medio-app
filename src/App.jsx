@@ -196,8 +196,7 @@ function App() {
       // 1. Algoritmo Dinámico de Deterioro Temporal (Time Decay + Hegemonic Filtering)
       const rawSortedNews = [...filteredByCategory].sort((a,b) => {
           const calculatePower = (art) => {
-              // 1. Desterrar Tendencias sociales abajo de todo
-              if (art.category === 'Tendencias') return -100000;
+              // (Fase 75: Borrado el filtro Tendencias)
 
               const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
 
@@ -271,13 +270,13 @@ function App() {
     const foreigners = filteredGlobalNews.filter(a => isForeign(a.category));
 
     // Balanceo Independiente
-    // Fase 43/60: Bloquear 'Tendencias' Y EXIGIR QUE EL HERO SEA ESTRICTAMENTE DE HOY
+    // Fase 43/60: EXIGIR QUE EL HERO SEA ESTRICTAMENTE DE HOY
     const todayStr = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
-    const localTopCandidates = locals.filter(a => (activeCategory || a.category !== 'Tendencias') && (!activeCategory ? a.date === todayStr : true));
+    const localTopCandidates = locals.filter(a => (!activeCategory ? a.date === todayStr : true));
     const localTop = localTopCandidates.slice(0, 8);
     const localRest = locals.filter(a => !localTop.includes(a));
 
-    const foreignTopCandidates = foreigners.filter(a => activeCategory || a.category !== 'Tendencias');
+    const foreignTopCandidates = foreigners;
     const foreignTop = foreignTopCandidates.slice(0, 8);
     const foreignRest = foreigners.filter(a => !foreignTop.includes(a));
 

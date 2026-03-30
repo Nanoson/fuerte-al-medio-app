@@ -23,8 +23,7 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
     'Internacional',
     'Espectáculos', 
     'Deportes', 
-    'Mercados',
-    'Tendencias'
+    'Mercados'
   ];
 
   return (
