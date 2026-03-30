@@ -380,6 +380,34 @@ app.get('/api/force-scrape', async (req, res) => {
     runScrapingCycle();
 });
 
+// ---------------------------------------------------
+// FASE 65: ENDPOINT DE DIAGNÓSTICO EN VIVO (TRANSPARENCIA CLOUD)
+// ---------------------------------------------------
+app.get('/api/debug-scraper', async (req, res) => {
+    try {
+        console.log("🔍 Iniciando Debug Sincrónico...");
+        const rawArticles = await fetchAllNews();
+        if(rawArticles.length === 0) return res.json({ error: "Extracción RAW falló. Zero links recogidos." });
+        
+        const clusters = groupArticles(rawArticles);
+        if(clusters.length === 0) return res.json({ error: "Agrupación falló. Cero clusters generados." });
+        
+        // Forzamos el Cluster 0 que suele ser el más masivo
+        const targetCluster = clusters[0];
+        
+        const { neutralizeArticles } = require('./neutralizer');
+        const finalNews = await neutralizeArticles(targetCluster, []);
+        
+        if (finalNews) {
+            res.json({ success: true, message: "Gemini procesó el artículo correctamente.", data: finalNews });
+        } else {
+            res.json({ error: "Gemini devolvió NULL. El catch interno en neutralizer.js lo ocultó." });
+        }
+    } catch (e) {
+        res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.message, stack: e.stack });
+    }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`===============================================`);
