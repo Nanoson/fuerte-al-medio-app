@@ -244,12 +244,21 @@ function App() {
     const isForeign = (cat) => ['Internacional', 'Deportes', 'Espectáculos', 'Mercados'].includes(cat);
 
     // Separación geográfica previa a la partición asimétrica
-    const locals = sortedNews.filter(a => !isForeign(a.category));
-    const foreigners = sortedNews.filter(a => isForeign(a.category));
+    // FASE 60: PRUEBA DE VIDA (EXTRACCIÓN EXPLÍCITA Y CENSURA FRONTAL)
+    const filteredGlobalNews = sortedNews.filter(a => {
+        const lowerTitle = (a.title || '').toLowerCase();
+        // Extracción quirúrgica solicitada por el usuario
+        if (lowerTitle.includes('imprudencia estatista') || lowerTitle.includes('fallo ypf') || lowerTitle.includes('alicia')) return false;
+        return true;
+    });
+
+    const locals = filteredGlobalNews.filter(a => !isForeign(a.category));
+    const foreigners = filteredGlobalNews.filter(a => isForeign(a.category));
 
     // Balanceo Independiente
-    // Fase 43: Bloquear estrictamente 'Tendencias' de la sección superior (Destacadas) para cuidar el editorial.
-    const localTopCandidates = locals.filter(a => activeCategory || a.category !== 'Tendencias');
+    // Fase 43/60: Bloquear 'Tendencias' Y EXIGIR QUE EL HERO SEA ESTRICTAMENTE DE HOY
+    const todayStr = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+    const localTopCandidates = locals.filter(a => (activeCategory || a.category !== 'Tendencias') && (!activeCategory ? a.date === todayStr : true));
     const localTop = localTopCandidates.slice(0, 8);
     const localRest = locals.filter(a => !localTop.includes(a));
 
