@@ -385,26 +385,16 @@ app.get('/api/force-scrape', async (req, res) => {
 // ---------------------------------------------------
 app.get('/api/debug-scraper', async (req, res) => {
     try {
-        console.log("🔍 Iniciando Debug Sincrónico...");
-        const rawArticles = await fetchAllNews();
-        if(rawArticles.length === 0) return res.json({ error: "Extracción RAW falló. Zero links recogidos." });
-        
-        const clusters = groupArticles(rawArticles);
-        if(clusters.length === 0) return res.json({ error: "Agrupación falló. Cero clusters generados." });
-        
-        // Forzamos el Cluster 0 que suele ser el más masivo
-        const targetCluster = clusters[0];
-        
-        const { neutralizeArticles } = require('./neutralizer');
-        const finalNews = await neutralizeArticles(targetCluster, []);
-        
-        if (finalNews) {
-            res.json({ success: true, message: "Gemini procesó el artículo correctamente.", data: finalNews });
-        } else {
-            res.json({ error: "Gemini devolvió NULL. El catch interno en neutralizer.js lo ocultó." });
+        console.log("🔍 Sondeando Modelos de la API de Google...");
+        const axios = require('axios');
+        if (!process.env.GEMINI_API_KEY) {
+            return res.json({ error: "No hay GEMINI_API_KEY configurada en el servidor en la nube." });
         }
+        
+        const response = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+        res.json({ success: true, list: response.data });
     } catch (e) {
-        res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.message, stack: e.stack });
+        res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.response ? e.response.data : e.message });
     }
 });
 
