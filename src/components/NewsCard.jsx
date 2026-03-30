@@ -240,6 +240,29 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
           </ul>
       )
   };
+  const handleShare = async (e) => {
+      e.stopPropagation();
+      const shareUrl = `${window.location.origin}/?article=${article.id}`;
+      // Fallback nativo: intentar disparar el modal de OS, sino copiar a portapapeles
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: article.title,
+                  text: (article.copete || article.Copete || 'Lee esta nota en Fuerte Al Medio'),
+                  url: shareUrl,
+              });
+          } catch (err) {
+              console.log('User canceled share or error:', err);
+          }
+      } else {
+          try {
+              await navigator.clipboard.writeText(shareUrl);
+              alert("¡Enlace copiado al portapapeles!\nYa podés pegarlo en WhatsApp o Telegram.");
+          } catch (err) {
+              console.error('Failed to copy fallback: ', err);
+          }
+      }
+  };
 
   return (
     <article className={isFullView ? "article-full" : "article-card"} style={isFullView ? {border: 'none', padding: 0} : {}}>
