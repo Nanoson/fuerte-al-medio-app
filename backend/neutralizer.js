@@ -47,7 +47,7 @@ ${compiledContext}
 Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
 {
     "title": "Titular de Alto Impacto redactado por el autor elegido",
-    "category": "Debe ser estrictamente una de: 'Política', 'Economía', 'Espectáculos', 'Deportes', 'Actualidad', 'Internacional', 'Mercados'",
+    "category": "Debe ser estrictamente una de: 'Política', 'Economía', 'Espectáculos', 'Deportes', 'Actualidad', 'Internacional', 'Mercados', 'Tecnología'",
     "authorId": "El ID exacto del periodista que seleccionaste (ej: 'valmont_pol', 'santillan_esp', etc.)",
     "relevanceScore": 85,
     "biasNeutralization": 95,

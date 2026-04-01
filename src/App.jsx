@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Header from './components/Header'
 import NewsCard from './components/NewsCard'
+import CortitaCard from './components/CortitaCard'
 import TeamPage from './components/TeamPage'
 import MarketsWidget from './components/MarketsWidget'
 import AuthorAvatar from './components/AuthorAvatar'
@@ -284,6 +285,19 @@ function App() {
        return <TeamPage onAuthorSelect={handleAuthorSelect} />;
     }
 
+    if (activeCategory === 'CORTITAS Y AL PIE') {
+       return (
+         <>
+           <h2 className="feed-header">Cortitas y al pie</h2>
+           <div className="cortitas-grid" style={{marginBottom: '4rem'}}>
+             {stabilizeImages(sortedNews).slice(0, 30).map((article) => (
+               <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
+             ))}
+           </div>
+         </>
+       );
+    }
+
     if (selectedAuthor) {
        const targetAuthor = authors.find(a => a.id === selectedAuthor);
        const authorNews = sortedNews.filter(a => a.authorId === selectedAuthor);
@@ -351,6 +365,18 @@ function App() {
                 {stabilizeImages(foreignTop).map((article, idx) => (
                    <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                 ))}
+            </div>
+        </div>
+
+        <div className="cortitas-section">
+            <h2 className="cortitas-section-title" onClick={() => handleCategorySelect('CORTITAS Y AL PIE')}>
+               Cortitas y al pie
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '4px'}}><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </h2>
+            <div className="cortitas-grid">
+               {stabilizeImages(sortedNews).slice(0, 10).map((article) => (
+                  <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
+               ))}
             </div>
         </div>
 

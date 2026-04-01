@@ -24,7 +24,8 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
     'Espectáculos', 
     'Deportes', 
     'Mercados',
-    'Tecnología'
+    'Tecnología',
+    'CORTITAS Y AL PIE'
   ];
 
   return (
