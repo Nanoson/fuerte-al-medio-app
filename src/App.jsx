@@ -80,7 +80,14 @@ function App() {
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const fetchNews = () => {
-    fetch(`${API_BASE}/api/news`)
+    let queryStr = '';
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const qArticle = params.get('article');
+        if (qArticle) queryStr = `?articleId=${qArticle}`;
+    }
+
+    fetch(`${API_BASE}/api/news${queryStr}`)
       .then(r => r.json())
       .then(data => {
         if(data && data.length > 0) {
@@ -108,6 +115,21 @@ function App() {
       })
       .catch(e => console.log("Backend API desconectado.", e));
   };
+
+  // Motor de Búsqueda Híbrido (Server-Side Debounced)
+  useEffect(() => {
+    if (!searchQuery) {
+        fetchNews();
+        return;
+    }
+    const timer = setTimeout(() => {
+        fetch(`${API_BASE}/api/search?q=${encodeURIComponent(searchQuery)}`)
+            .then(r => r.json())
+            .then(data => setNews(data || []))
+            .catch(e => console.error("Search API failed", e));
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchNews();
@@ -152,6 +174,8 @@ function App() {
     if(q !== '') {
         setSelectedArticle(null);
         window.history.replaceState({ activeCategory, selectedArticle: null }, '', `/?search=${encodeURIComponent(q)}`);
+    } else {
+        window.history.replaceState({ activeCategory, selectedArticle: null }, '', `/`);
     }
   }
 
@@ -180,17 +204,11 @@ function App() {
     }).catch(e => console.error(e));
   };
 
-  const searchResults = useMemo(() => {
-    if (!searchQuery) return news;
-    const term = searchQuery.toLowerCase();
-    return news.filter(article => (article.title || '').toLowerCase().includes(term) || (article.summary || '').toLowerCase().includes(term));
-  }, [news, searchQuery]);
-
   const filteredByCategory = useMemo(() => {
     return activeCategory && activeCategory !== 'CORTITAS Y AL PIE'
-      ? searchResults.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
-      : searchResults;
-  }, [searchResults, activeCategory]);
+      ? news.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
+      : news;
+  }, [news, activeCategory]);
 
   // Mega-bloque de Procesamiento Costoso: Memoizado para no bloquear la UI al abrir una nota
   const { destacadasNews, otrasNews, sortedNews } = useMemo(() => {

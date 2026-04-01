@@ -42,36 +42,57 @@ app.get('/api/force-scrape', async (req, res) => {
     res.json({ success: true, message: "Scraping cycle deployed to background workers." });
 });
 
+const formatRowToArticle = (row) => ({
+    id: row.id,
+    authorId: row.authorid || 'cuesta_pol',
+    title: row.title,
+    category: row.category,
+    biasNeutralization: row.biasneutralization,
+    date: row.date,
+    summary: row.summary,
+    conflictPoints: row.conflictpoints,
+    sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
+    related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
+    topicKey: row.topickey,
+    likes: row.likes,
+    dislikes: row.dislikes,
+    userVotesCount: row.uservotescount,
+    userVotesSum: row.uservotessum,
+    comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
+    importanceScore: row.importancescore,
+    relevanceScore: row.relevancescore || 50,
+    copete: row.copete,
+    cortita: row.cortita,
+    imageUrl: row.imageurl,
+    youtubeQuery: row.youtubequery,
+    createdAt: row.createdat,
+    updatedAt: row.updatedat
+});
+
 app.get('/api/news', async (req, res) => {
     try {
-        const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedat DESC`);
-        const articles = rows.map(row => ({
-            id: row.id,
-            authorId: row.authorid || 'cuesta_pol',
-            title: row.title,
-            category: row.category,
-            biasNeutralization: row.biasneutralization,
-            date: row.date,
-            summary: row.summary,
-            conflictPoints: row.conflictpoints,
-            sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
-            related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
-            topicKey: row.topickey,
-            likes: row.likes,
-            dislikes: row.dislikes,
-            userVotesCount: row.uservotescount,
-            userVotesSum: row.uservotessum,
-            comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
-            importanceScore: row.importancescore,
-            relevanceScore: row.relevancescore || 50,
-            copete: row.copete,
-            cortita: row.cortita,
-            imageUrl: row.imageurl,
-            youtubeQuery: row.youtubequery,
-            createdAt: row.createdat,
-            updatedAt: row.updatedat
-        }));
-        res.json(articles);
+        const articleId = req.query.articleId;
+        let queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' ORDER BY updatedat DESC`;
+        let params = [];
+
+        if (articleId && !isNaN(parseInt(articleId))) {
+            queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' OR id = $1 ORDER BY updatedat DESC`;
+            params = [parseInt(articleId)];
+        }
+
+        const { rows } = await db.query(queryStr, params);
+        res.json(rows.map(formatRowToArticle));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.json([]);
+        const { rows } = await db.query(`SELECT * FROM articles WHERE title ILIKE $1 OR summary ILIKE $1 OR copete ILIKE $1 ORDER BY updatedat DESC LIMIT 150`, [`%${q}%`]);
+        res.json(rows.map(formatRowToArticle));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
