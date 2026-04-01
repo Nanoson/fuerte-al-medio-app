@@ -65,6 +65,7 @@ app.get('/api/news', async (req, res) => {
             importanceScore: row.importancescore,
             relevanceScore: row.relevancescore || 50,
             copete: row.copete,
+            cortita: row.cortita,
             imageUrl: row.imageurl,
             youtubeQuery: row.youtubequery,
             createdAt: row.createdat,
@@ -301,10 +302,10 @@ const runScrapingCycle = async () => {
                 if (isTecnologia) finalNews.category = 'Tecnología';
 
                 await db.query(`
-                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore, imagecaption)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore, imagecaption)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, imagecaption=EXCLUDED.imagecaption, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, cortita=EXCLUDED.cortita, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, imagecaption=EXCLUDED.imagecaption, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalNews.title,
                     finalNews.category,
@@ -318,6 +319,7 @@ const runScrapingCycle = async () => {
                     finalNews.topicKey,
                     new Set(targetCluster.articles.map(a => a.source.name)).size,
                     finalNews.copete || finalNews.Copete || null,
+                    finalNews.cortita || null,
                     targetCluster.clusterImage || null,
                     finalNews.youtubeQuery || null,
                     finalNews.relevanceScore || 50,
@@ -345,10 +347,10 @@ const runScrapingCycle = async () => {
             
             if (finalTrend) {
                 await db.query(`
-                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, cortita=EXCLUDED.cortita, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalTrend.title,
                     finalTrend.category,
@@ -362,6 +364,7 @@ const runScrapingCycle = async () => {
                     finalTrend.topicKey,
                     new Set(finalTrend.sources.map(s => s.name)).size, 
                     finalTrend.copete || "Métricas sociales analizadas",
+                    null,
                     null, // Las tendencias no tienen porta hero images obligatorias
                     null,
                     finalTrend.relevanceScore || 65

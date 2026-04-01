@@ -52,6 +52,7 @@ Responde ÚNICAMENTE con un JSON válido usando estrictamente esta estructura:
     "relevanceScore": 85,
     "biasNeutralization": 95,
     "copete": "Subtítulo periodístico (bajada) fascinante de 2 o 3 renglones elaborado por el periodista.",
+    "cortita": "Breve resumen punzante de máximo 4 renglones redactado por el periodista para lectura rápida (Formato 'Cortitas y al pie').",
     "summary": "Cuerpo completo de la nota asumiendo la voz del autor. Usando PÁRRAFOS SUELTOS ESPACIADOS (separados por doble salto de línea). Incluye obligatoriamente la lista de viñetas.",
     "conflictPoints": "Análisis rápido y quirúrgico de cómo/en qué difirieron los medios originales respecto al evento.",
     "sources": [ { "name": "Nombre exacto del Medio", "url": "Link original de validación", "bias": "Ideología registrada" } ],

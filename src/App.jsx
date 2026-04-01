@@ -187,7 +187,7 @@ function App() {
   }, [news, searchQuery]);
 
   const filteredByCategory = useMemo(() => {
-    return activeCategory 
+    return activeCategory && activeCategory !== 'CORTITAS Y AL PIE'
       ? searchResults.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
       : searchResults;
   }, [searchResults, activeCategory]);
@@ -374,7 +374,7 @@ function App() {
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '4px'}}><polyline points="9 18 15 12 9 6"></polyline></svg>
             </h2>
             <div className="cortitas-grid">
-               {stabilizeImages(sortedNews).slice(0, 10).map((article) => (
+               {stabilizeImages(sortedNews).slice(0, 9).map((article) => (
                   <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
                ))}
             </div>

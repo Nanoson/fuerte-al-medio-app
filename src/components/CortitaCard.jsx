@@ -14,7 +14,7 @@ const CortitaCard = ({ article, onSelect }) => {
   return (
     <div className="cortita-card" onClick={() => onSelect && onSelect(article)}>
       <h4 className="cortita-title">{article.title}</h4>
-      <p className="cortita-summary">{renderBoldText(article.summary)}</p>
+      <p className="cortita-summary">{renderBoldText(article.cortita || article.summary)}</p>
       <span className="cortita-link">
         Leer nota completa
       </span>
