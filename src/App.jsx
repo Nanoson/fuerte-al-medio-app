@@ -472,6 +472,9 @@ function App() {
                  ← Leer mas Opiniones de los lectores
              </div>
              
+             <OpinionForm onPublished={fetchNews} />
+             <div style={{marginBottom: '2rem'}}></div>
+             
              <OpinionCard article={selectedArticle} API_BASE={API_BASE} />
          </div>
        );
@@ -544,7 +547,7 @@ function App() {
       </main>
 
       {/* Widget Global Flotante */}
-      {!showDashboard && (
+      {!showDashboard && !(selectedArticle && selectedArticle.category === 'OPINIONES DE LECTORES') && (
           <FeedbackWidget 
               currentContextId={selectedArticle?.id} 
               currentContextTitle={selectedArticle?.title} 
