@@ -15,12 +15,18 @@ const renderBoldText = (text) => {
 const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategorySelect, onUpdate, onAuthorSelect }) => {
   const [votesCount, setVotesCount] = useState(Number(article.userVotesCount) || 0);
   const [votesSum, setVotesSum] = useState(Number(article.userVotesSum) || 0);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [scoreInput, setScoreInput] = useState(0);
+  const [previousVote, setPreviousVote] = useState(() => {
+      if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem(`civic_vote_${article.id}`);
+          return saved ? Number(saved) : null;
+      }
+      return null;
+  });
+  const [hasVoted, setHasVoted] = useState(previousVote !== null);
+  const [scoreInput, setScoreInput] = useState(previousVote !== null ? previousVote : 0);
   const donutRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [previousVote, setPreviousVote] = useState(0);
   
   useEffect(() => {
       setVotesCount(Number(article.userVotesCount) || 0);
@@ -117,9 +123,9 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       let adjusted = angle + 90; // Shift: Top becomes 0
       if (adjusted < 0) adjusted += 360;
       
-      // Magnetic snapping near the extreme ends (0 or 100)
-      if (adjusted > 350) return 100;
-      if (adjusted < 10) return 0;
+      // Magnetic snapping near the extreme ends
+      if (adjusted > 355) return 100;
+      if (adjusted < 5) return 0; // Means UNVOTE.
       
       return Math.round((adjusted / 360) * 100);
   };
@@ -141,24 +147,44 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
       e.currentTarget.releasePointerCapture(e.pointerId);
       setIsDragging(false);
       
-      const isChange = hasVoted;
-      const scoreDelta = isChange ? (scoreInput - previousVote) : scoreInput;
-      
-      if (isChange && scoreDelta === 0) return; // No modificó el porcentaje
+      let finalScore = scoreInput;
+      let scoreDelta = 0;
+      let countDelta = 0;
 
-      setPreviousVote(scoreInput);
-      setHasVoted(true);
-      setShowConfetti(true);
+      if (finalScore === 0) {
+          // UNVOTE
+          if (!hasVoted) return;
+          
+          scoreDelta = -previousVote;
+          countDelta = -1;
+          
+          setPreviousVote(null);
+          setHasVoted(false);
+          if (typeof window !== 'undefined') localStorage.removeItem(`civic_vote_${article.id}`);
+      } else {
+          // VOTE / UPDATE
+          finalScore = Math.max(1, finalScore);
+          setScoreInput(finalScore);
 
-      const deltaCount = isChange ? 0 : 1;
-      setVotesCount(prev => prev + deltaCount);
-      setVotesSum(prev => prev + scoreDelta);
+          scoreDelta = hasVoted ? (finalScore - previousVote) : finalScore;
+          if (hasVoted && scoreDelta === 0) return;
+          
+          countDelta = hasVoted ? 0 : 1;
+          
+          setPreviousVote(finalScore);
+          setHasVoted(true);
+          setShowConfetti(true);
+          if (typeof window !== 'undefined') localStorage.setItem(`civic_vote_${article.id}`, finalScore);
+      }
+
+      setVotesCount(Math.max(0, votesCount + countDelta));
+      setVotesSum(votesSum + scoreDelta);
 
       try {
           await fetch(`${API_BASE}/api/news/${article.id}/action`, { 
               method: 'POST', 
               headers: {'Content-Type': 'application/json'}, 
-              body: JSON.stringify({type: 'vote', score: Number(scoreDelta), isChange}) 
+              body: JSON.stringify({type: 'vote', score: Number(scoreDelta), deltaCount: countDelta}) 
           });
           if (onUpdate) onUpdate();
       } catch(e) {}
