@@ -72,15 +72,23 @@ const formatRowToArticle = (row) => ({
 app.get('/api/news', async (req, res) => {
     try {
         const articleId = req.query.articleId;
-        let queryStr = `SELECT * FROM articles WHERE (createdat >= NOW() - INTERVAL '3 days' OR (category = 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '7 days')) ORDER BY updatedat DESC`;
+        
+        let queryStr = `
+            SELECT * FROM articles WHERE category != 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '3 days'
+            UNION ALL
+            (SELECT * FROM articles WHERE category = 'OPINIONES DE LECTORES' ORDER BY createdat DESC LIMIT 60)
+        `;
         let params = [];
 
         if (articleId && !isNaN(parseInt(articleId))) {
-            queryStr = `SELECT * FROM articles WHERE (createdat >= NOW() - INTERVAL '3 days' OR (category = 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '7 days')) OR id = $1 ORDER BY updatedat DESC`;
+            queryStr += ` UNION ALL SELECT * FROM articles WHERE id = $1`;
             params = [parseInt(articleId)];
         }
 
-        const { rows } = await db.query(queryStr, params);
+        // We wrap it in a subquery to sort the final result
+        const finalQuery = `SELECT * FROM (${queryStr}) AS t ORDER BY updatedat DESC`;
+
+        const { rows } = await db.query(finalQuery, params);
         res.json(rows.map(formatRowToArticle));
     } catch (err) {
         res.status(500).json({ error: err.message });

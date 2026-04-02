@@ -217,11 +217,20 @@ function App() {
       // 1. Algoritmo Dinámico de Deterioro Temporal (Time Decay + Hegemonic Filtering)
       const rawSortedNews = [...filteredByCategory].sort((a,b) => {
           const calculatePower = (art) => {
-              // Si la categoría activa es OPINIONES, ignorar fechas y ordenar netamente por TRACCION TOTAL (userVotesCount).
+              // Si la categoría activa es OPINIONES, algoritmo a pedido:
               if (activeCategory === 'OPINIONES DE LECTORES') {
-                  const artAgeDays = (Date.now() - new Date(art.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24);
-                  // Opcional: penalización ultra liviana solo para desempatar empates de 0 tracción.
-                  return (art.userVotesCount || 0) * 1000 - artAgeDays;
+                  const artAgeHours = (Date.now() - new Date(art.createdAt || Date.now()).getTime()) / (1000 * 60 * 60);
+                  
+                  let power = (art.userVotesCount || 0) * 1000;
+                  
+                  // Garantizar a las notas nuevas (< 24hs) un puesto alto para traccionar
+                  if (artAgeHours <= 24) {
+                      power += 1000000 - (artAgeHours * 100); 
+                  }
+                  
+                  // Desempate temporal minúsculo para las que no tienen votos
+                  power -= artAgeHours; 
+                  return power;
               }
 
               // (Fase 75: Borrado el filtro Tendencias)
@@ -336,7 +345,7 @@ function App() {
            <OpinionForm onPublished={fetchNews} />
            
            <div className="opiniones-masonry" style={{marginBottom: '4rem'}}>
-             {sortedNews.map((article) => (
+             {sortedNews.slice(0, 40).map((article) => (
                 <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} onSelect={handleSelectArticle} />
              ))}
            </div>
