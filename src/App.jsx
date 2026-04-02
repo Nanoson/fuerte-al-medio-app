@@ -207,10 +207,24 @@ function App() {
   };
 
   const filteredByCategory = useMemo(() => {
-    return activeCategory && activeCategory !== 'CORTITAS Y AL PIE'
-      ? news.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
-      : news;
+    if (activeCategory && activeCategory !== 'CORTITAS Y AL PIE') {
+      return news.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'));
+    }
+    return news.filter(a => a.category !== 'OPINIONES DE LECTORES');
   }, [news, activeCategory]);
+
+  const homeOpinions = useMemo(() => {
+      const rawOpinions = news.filter(a => a.category === 'OPINIONES DE LECTORES');
+      return rawOpinions.sort((a, b) => {
+          const artAgeHoursA = (Date.now() - new Date(a.createdAt || Date.now()).getTime()) / (1000 * 60 * 60);
+          const artAgeHoursB = (Date.now() - new Date(b.createdAt || Date.now()).getTime()) / (1000 * 60 * 60);
+          let pA = (a.userVotesCount||0)*1000 - artAgeHoursA;
+          if (artAgeHoursA <= 24) pA += 1000000 - (artAgeHoursA*100);
+          let pB = (b.userVotesCount||0)*1000 - artAgeHoursB;
+          if (artAgeHoursB <= 24) pB += 1000000 - (artAgeHoursB*100);
+          return pB - pA;
+      }).slice(0, 9);
+  }, [news]);
 
   // Mega-bloque de Procesamiento Costoso: Memoizado para no bloquear la UI al abrir una nota
   const { destacadasNews, otrasNews, sortedNews } = useMemo(() => {
@@ -434,6 +448,20 @@ function App() {
                ))}
             </div>
         </div>
+
+        {homeOpinions.length > 0 && !activeCategory && !searchQuery && (
+            <div className="opiniones-section-home" style={{marginTop: '5rem', marginBottom: '4rem'}}>
+                <h2 className="cortitas-section-title" style={{color: 'var(--accent)'}} onClick={() => handleCategorySelect('OPINIONES DE LECTORES')}>
+                   Opiniones de Lectores
+                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '4px'}}><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </h2>
+                <div className="opiniones-masonry">
+                   {homeOpinions.map((article) => (
+                      <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} onSelect={handleSelectArticle} />
+                   ))}
+                </div>
+            </div>
+        )}
 
         {(localRest.length > 0 || foreignRest.length > 0) && (
             <>
