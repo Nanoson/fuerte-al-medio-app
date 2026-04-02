@@ -16,29 +16,21 @@ import { authors } from './data/authors.js'
 // (Izar fuera del componente evita ReferenceErrors y recreaciones de memoria)
 // ==========================================
 
-const calculateOverlap = (textA, textB) => {
-    if (!textA || !textB) return 0;
-    const stops = new Set(['el','la','los','las','un','una','y','o','en','de','a','ante','con','para','por','como','que','del','al','se','su','lo','es','unos','unas','más','muy','sin','sobre','tras']);
-    const wordsA = (textA || '').toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
-    const wordsB = (textB || '').toLowerCase().replace(/[^\wáéíóúüñ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stops.has(w));
-    if (wordsA.length === 0 || wordsB.length === 0) return 0;
-    let matches = 0;
-    for (const w of wordsA) { if (wordsB.includes(w)) matches++; }
-    return matches / Math.min(wordsA.length, wordsB.length);
-}
-
 const filterDuplicates = (newsArray) => {
     let unique = [];
+    let seenTopics = new Set();
+    let seenTitles = new Set();
+    
     for (let article of newsArray) {
-        let isDuplicate = false;
-        for (let existing of unique) {
-            const titleSimilarity = calculateOverlap(article.title, existing.title);
-            const summarySimilarity = calculateOverlap((article.summary || '').substring(0, 120), (existing.summary || '').substring(0, 120));
-            if (titleSimilarity >= 0.45 || summarySimilarity >= 0.45) { 
-                isDuplicate = true; break;
-            }
+        if (article.topicKey) {
+            if (seenTopics.has(article.topicKey)) continue;
+            seenTopics.add(article.topicKey);
+            unique.push(article);
+        } else {
+            if (seenTitles.has(article.title)) continue;
+            seenTitles.add(article.title);
+            unique.push(article);
         }
-        if (!isDuplicate) unique.push(article);
     }
     return unique;
 }

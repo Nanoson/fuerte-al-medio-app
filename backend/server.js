@@ -69,10 +69,18 @@ const formatRowToArticle = (row) => ({
     updatedAt: row.updatedat
 });
 
+let apiNewsCache = { data: null, timestamp: 0 };
+const CACHE_TTL_MS = 60 * 1000;
+
 app.get('/api/news', async (req, res) => {
     try {
         const articleId = req.query.articleId;
         
+        const now = Date.now();
+        if (!articleId && apiNewsCache.data && (now - apiNewsCache.timestamp < CACHE_TTL_MS)) {
+            return res.json(apiNewsCache.data);
+        }
+
         let queryStr = `
             SELECT * FROM articles WHERE category != 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '3 days'
             UNION ALL
@@ -85,11 +93,16 @@ app.get('/api/news', async (req, res) => {
             params = [parseInt(articleId)];
         }
 
-        // We wrap it in a subquery to sort the final result
         const finalQuery = `SELECT * FROM (${queryStr}) AS t ORDER BY updatedat DESC`;
-
         const { rows } = await db.query(finalQuery, params);
-        res.json(rows.map(formatRowToArticle));
+        const formattedData = rows.map(formatRowToArticle);
+
+        if (!articleId) {
+            apiNewsCache.data = formattedData;
+            apiNewsCache.timestamp = now;
+        }
+
+        res.json(formattedData);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
