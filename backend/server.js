@@ -112,7 +112,7 @@ app.get('/api/search', async (req, res) => {
 app.post('/api/opinions', async (req, res) => {
     const { alias, title, body } = req.body;
     try {
-        if (!title || !body) return res.status(400).json({error: "Falta título o contenido"});
+        if (!alias || !title || !body) return res.status(400).json({error: "Los campos Nombre/Alias, Título y Cuerpo son estrictamente obligatorios"});
         if (body.length > 1200) return res.status(400).json({error: "Límite de 1200 caracteres excedido"});
         
         await db.query(`
