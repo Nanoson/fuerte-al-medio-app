@@ -565,7 +565,7 @@ a {
 
 /* Opiniones de Lectores */
 .opiniones-header-container { text-align: center; margin: 20px 0; }
-.opiniones-subtitle { font-style: italic; color: var(--text-muted); margin-top: -10px; display: block; margin-bottom: 20px; font-weight: 500; }
+.opiniones-subtitle { font-style: italic; color: var(--accent); margin-top: -10px; display: block; margin-bottom: 20px; font-weight: 600; }
 
 .opinion-form-collapsed {
     background: var(--bg-card); border: 2px dashed rgba(128,128,128,0.3); 
@@ -574,7 +574,7 @@ a {
 }
 .opinion-form-collapsed:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--primary-accent); }
 .opinion-form-collapsed p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
-.opinion-form-collapsed h3 { margin: 0 0 5px 0; color: var(--text-main); }
+.opinion-form-collapsed h3 { margin: 0 0 5px 0; color: var(--accent); }
 
 .opinion-form-expanded {
     background: var(--bg-card); border-radius: 12px; padding: 20px; 

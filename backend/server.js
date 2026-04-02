@@ -146,9 +146,9 @@ app.post('/api/news/:id/action', async (req, res) => {
         if (type === 'vote' && typeof score === 'number') {
             // Fase 48: Votos modificables (Deltas)
             const isChange = req.body.isChange || false;
-            const deltaCount = isChange ? 0 : 1; 
-            // Si es un cambio, el 'score' que viene del cliente es la diferencia (scoreDelta) entre el voto nuevo y el viejo.
-            await db.query(`UPDATE articles SET userVotesCount = COALESCE(userVotesCount, 0) + $1, userVotesSum = COALESCE(userVotesSum, 0) + $2 WHERE id = $3`, [deltaCount, Number(score), Number(id)]);
+            const deltaCount = req.body.deltaCount !== undefined ? req.body.deltaCount : (isChange ? 0 : 1);
+            // Si es un cambio o undo, el 'score' que viene del cliente es la diferencia (scoreDelta) entre el voto nuevo y el viejo.
+            await db.query(`UPDATE articles SET userVotesCount = GREATEST(COALESCE(userVotesCount, 0) + $1, 0), userVotesSum = COALESCE(userVotesSum, 0) + $2 WHERE id = $3`, [deltaCount, Number(score), Number(id)]);
             res.json({ success: true });
         } else if (type === 'comment' && commentObj) {
             const { rows } = await db.query(`SELECT comments FROM articles WHERE id = $1`, [id]);

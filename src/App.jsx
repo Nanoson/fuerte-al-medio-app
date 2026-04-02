@@ -337,7 +337,7 @@ function App() {
            
            <div className="opiniones-masonry" style={{marginBottom: '4rem'}}>
              {sortedNews.map((article) => (
-                <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} />
+                <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} onSelect={handleSelectArticle} />
              ))}
            </div>
          </>

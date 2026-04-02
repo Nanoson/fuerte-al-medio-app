@@ -1,34 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const OpinionCard = ({ article, API_BASE }) => {
+const OpinionCard = ({ article, API_BASE, onSelect }) => {
+    const [userVote, setUserVote] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem(`opinion_vote_${article.id}`);
+            return saved ? Number(saved) : null;
+        }
+        return null;
+    });
+
     const [localVotesCount, setLocalVotesCount] = useState(article.userVotesCount || 0);
     const [localVotesSum, setLocalVotesSum] = useState(article.userVotesSum || 0);
-    const [userVote, setUserVote] = useState(null);
 
     const handleVote = async (score) => {
-        let isChange = false;
-        let scoreDelta = score;
+        let scoreDelta = 0;
+        let countDelta = 0;
+        let newVoteState = null;
 
-        if (userVote !== null) {
-            if (userVote === score) return;
-            isChange = true;
+        if (userVote === score) {
+            // UNVOTE
+            scoreDelta = -score;
+            countDelta = -1;
+            newVoteState = null;
+        } else if (userVote !== null) {
+            // CHANGE VOTE
             scoreDelta = score - userVote;
+            countDelta = 0;
+            newVoteState = score;
+        } else {
+            // NEW VOTE
+            scoreDelta = score;
+            countDelta = 1;
+            newVoteState = score;
         }
 
         const newSum = localVotesSum + scoreDelta;
-        const newCount = isChange ? localVotesCount : localVotesCount + 1;
+        const newCount = localVotesCount + countDelta;
+        
         setLocalVotesSum(newSum);
-        setLocalVotesCount(newCount);
-        setUserVote(score);
+        setLocalVotesCount(Math.max(0, newCount));
+        setUserVote(newVoteState);
+        
+        if (typeof window !== 'undefined') {
+            if (newVoteState === null) {
+                localStorage.removeItem(`opinion_vote_${article.id}`);
+            } else {
+                localStorage.setItem(`opinion_vote_${article.id}`, newVoteState);
+            }
+        }
 
         fetch(`${API_BASE}/api/news/${article.id}/action`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'vote', score: scoreDelta, isChange })
+            body: JSON.stringify({ type: 'vote', score: scoreDelta, deltaCount: countDelta })
         }).catch(e => console.error("Vote action failed:", e));
     };
 
-    const handleShare = () => {
+    const handleShare = (e) => {
+        e.stopPropagation();
         const urlToShare = `${window.location.origin}/?article=${article.id}`;
         if (navigator.share) {
             navigator.share({ title: article.title, url: urlToShare }).catch(console.error);
@@ -38,12 +67,16 @@ const OpinionCard = ({ article, API_BASE }) => {
         }
     };
 
+    const handleCardClick = () => {
+        if (onSelect) onSelect(article);
+    };
+
     const displayDate = article.createdAt 
         ? new Date(article.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
         : article.date;
 
     return (
-        <div className="opinion-card">
+        <div className="opinion-card" onClick={handleCardClick} style={{ cursor: onSelect ? 'pointer' : 'default' }}>
             <h4>{article.title}</h4>
             <span className="opinion-alias">Por: {article.copete || "Anónimo"} &bull; {displayDate}</span>
             <p className="opinion-body">"{article.summary}"</p>
