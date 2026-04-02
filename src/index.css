@@ -624,3 +624,13 @@ a {
 }
 .opinion-share-btn:hover { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
 
+/* Opinion Voting */
+.opinion-voting { display: flex; gap: 8px; }
+.opinion-voting .vote-btn { background: rgba(128,128,128,0.1); border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; color: var(--text-main); display: flex; align-items: center; gap: 4px; transition: all 0.2s; font-weight: 600; }
+.opinion-voting .vote-btn span { font-size: 0.85rem; opacity: 0.8; }
+.opinion-voting .vote-btn.up:hover, .opinion-voting .vote-btn.up.active { background: rgba(34,197,94,0.15); color: #22c55e; }
+.opinion-voting .vote-btn.down:hover, .opinion-voting .vote-btn.down.active { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+.opinion-share-btn.icon-only { padding: 6px; border-radius: 50px; display: flex; align-items: center; justify-content: center; background: transparent; }
+.opinion-share-btn.icon-only:hover { background: rgba(128,128,128,0.1); }
+

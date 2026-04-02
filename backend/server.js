@@ -105,7 +105,7 @@ app.post('/api/opinions', async (req, res) => {
     const { alias, title, body } = req.body;
     try {
         if (!title || !body) return res.status(400).json({error: "Falta título o contenido"});
-        if (body.length > 500) return res.status(400).json({error: "Límite de 500 caracteres excedido"});
+        if (body.length > 1200) return res.status(400).json({error: "Límite de 1200 caracteres excedido"});
         
         await db.query(`
             INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore)

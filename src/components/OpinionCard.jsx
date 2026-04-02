@@ -45,12 +45,23 @@ const OpinionCard = ({ article, API_BASE }) => {
             <p className="opinion-body">"{article.summary}"</p>
             
             <div className="opinion-footer">
-                <div className="civic-rating compact">
-                    <button className={userVote === 100 ? 'active' : ''} onClick={(e) => { e.stopPropagation(); handleVote(100); }}>👍</button>
-                    <button className={userVote === 50 ? 'active' : ''} onClick={(e) => { e.stopPropagation(); handleVote(50); }}>😐</button>
-                    <button className={userVote === 0 ? 'active' : ''} onClick={(e) => { e.stopPropagation(); handleVote(0); }}>👎</button>
+                <div className="opinion-voting">
+                    <button className={`vote-btn up ${userVote === 100 ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleVote(100); }}>
+                        👍 <span>{Math.floor(localVotesSum / 100)}</span>
+                    </button>
+                    <button className={`vote-btn down ${userVote === 0 ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleVote(0); }}>
+                        👎 <span>{localVotesCount - Math.floor(localVotesSum / 100)}</span>
+                    </button>
                 </div>
-                <button className="opinion-share-btn" onClick={handleShare}>Compartir</button>
+                <button className="opinion-share-btn icon-only" onClick={handleShare} aria-label="Compartir">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                </button>
             </div>
         </div>
     );
