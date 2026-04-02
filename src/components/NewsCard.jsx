@@ -240,6 +240,29 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
           </ul>
       )
   };
+  const handleShare = async (e) => {
+      e.stopPropagation();
+      const shareUrl = `${window.location.origin}/?article=${article.id}`;
+      // Fallback nativo: intentar disparar el modal de OS, sino copiar a portapapeles
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: article.title,
+                  text: (article.copete || article.Copete || 'Lee esta nota en Fuerte Al Medio'),
+                  url: shareUrl,
+              });
+          } catch (err) {
+              console.log('User canceled share or error:', err);
+          }
+      } else {
+          try {
+              await navigator.clipboard.writeText(shareUrl);
+              alert("¡Enlace copiado al portapapeles!\nYa podés pegarlo en WhatsApp o Telegram.");
+          } catch (err) {
+              console.error('Failed to copy fallback: ', err);
+          }
+      }
+  };
 
   return (
     <article className={isFullView ? "article-full" : "article-card"} style={isFullView ? {border: 'none', padding: 0} : {}}>
@@ -267,7 +290,22 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                 </div>
             </div>
         </div>
-        {renderRadialGauge()}
+        <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem'}}>
+           <button 
+             onClick={handleShare}
+             style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '42px', height: '42px', borderRadius: '50%', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.05)'}}
+             title="Compartir Artículo"
+           >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                 <circle cx="18" cy="5" r="3"></circle>
+                 <circle cx="6" cy="12" r="3"></circle>
+                 <circle cx="18" cy="19" r="3"></circle>
+                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+           </button>
+           {renderRadialGauge()}
+        </div>
       </div>
       
       <h2 
@@ -308,11 +346,20 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
 
       {/* 2. PORTADA HD (Baja debajo del copete) */}
       {article.imageUrl && !isCompact && (
-          <div 
-            onClick={() => !isFullView && onSelect && onSelect(article)} 
-            style={{width: '100%', height: isHero || isFullView ? '450px' : '220px', overflow: 'hidden', borderRadius: '8px', marginBottom: '1.5rem', cursor: !isFullView ? 'pointer' : 'default', background: '#f5f5f5'}}
-          >
-              <img src={article.imageUrl} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+          <div style={{marginBottom: '1.5rem'}}>
+              <div 
+                onClick={() => !isFullView && onSelect && onSelect(article)} 
+                style={{width: '100%', height: isHero || isFullView ? '450px' : '220px', overflow: 'hidden', borderRadius: '8px', cursor: !isFullView ? 'pointer' : 'default', background: '#f5f5f5', marginBottom: (article.imagecaption || article.imageCaption) ? '0.6rem' : '0'}}
+              >
+                  <img src={article.imageUrl} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+              </div>
+              {(article.imagecaption || article.imageCaption) && (
+                  <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                      <span style={{display: 'block', maxWidth: '85%', fontSize: '0.86rem', color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'right', borderRight: '3px solid var(--accent)', paddingRight: '0.6rem', lineHeight: '1.4'}}>
+                          {article.imagecaption || article.imageCaption}
+                      </span>
+                  </div>
+              )}
           </div>
       )}
       
@@ -341,7 +388,18 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                           background: 'var(--card-bg)', border: '1px solid var(--accent)', borderRadius: '12px',
                           padding: '1.5rem', margin: '2rem 0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
                       }}>
-                          <span style={{display: 'block', fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem'}}>Puntos Clave del Debate</span>
+                          <div style={{marginBottom: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem'}}>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem'}}>
+                                  <svg width="26" height="20" viewBox="0 0 32 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <rect x="2" y="2" width="28" height="17" rx="2" ry="2" />
+                                      <path d="M12 23h8" />
+                                      <path d="M16 19v4" />
+                                      <text x="16" y="14" textAnchor="middle" fontSize="10.5" fontWeight="900" fontFamily="sans-serif" fill="var(--accent)" strokeWidth="0">VAR</text>
+                                  </svg>
+                                  <span style={{fontSize: '0.95rem', color: 'var(--accent)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', paddingTop: '2px'}}>El VAR de Fuerte Al Medio</span>
+                              </div>
+                              <span style={{display: 'block', fontSize: '0.85rem', color: 'var(--accent)', fontStyle: 'italic', fontWeight: 600, opacity: 0.85}}>Un resumen objetivo y neutral de este artículo.</span>
+                          </div>
                           <ul style={{listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem'}}>
                               {bullets.map((b, i) => (
                                   <li key={`b-${i}`} style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
@@ -380,6 +438,16 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                       elements.push(renderBulletGroup(currentBullets, 'end'));
                   }
 
+                  // Fase 78: Cita formal y directa para ecosistema Tech/Cripto
+                  if (article.category === 'Tecnología' && article.sources && article.sources.length > 0) {
+                      const primarySource = article.sources[0];
+                      elements.push(
+                          <p key="tech-source-link" style={{fontSize: '1.05rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '2rem', padding: '1rem', background: 'rgba(128,128,128,0.05)', borderRadius: '6px', borderLeft: '3px solid var(--text-secondary)'}}>
+                              Fuente: <a href={primarySource.url} target="_blank" rel="noreferrer" style={{color: 'var(--accent)', textDecoration: 'underline'}}>{primarySource.name}</a>
+                          </p>
+                      );
+                  }
+
                   return elements;
               })()}
           </div>
@@ -389,24 +457,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             <p style={{fontSize: '1.1rem'}}>{article.conflictPoints}</p>
           </div>
 
-          {article.category === 'Tendencias' ? (
-              <div className="social-cards-container" style={{marginBottom: '3.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', padding: '1.5rem', background: '#fafafa', borderRadius: '12px', border: '1px solid #eaeaea'}}>
-                  <span className="source-label" style={{display: 'block', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 800}}>Citas Literales Extraídas del Debate Público:</span>
-                  {article.sources && article.sources.map((src, idx) => (
-                      <a key={idx} href={src.url} target="_blank" rel="noreferrer" style={{display: 'block', textDecoration: 'none', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.2rem', transition: 'box-shadow 0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.02)'}}>
-                          <div style={{display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem'}}>
-                              <div style={{width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold'}}>{src.name.charAt(2).toUpperCase()}</div>
-                              <div style={{display: 'flex', flexDirection: 'column'}}>
-                                  <span style={{fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)'}}>{src.name}</span>
-                                  <span style={{fontSize: '0.8rem', color: '#16a34a', fontWeight: 600}}>⬆ {src.bias}</span>
-                              </div>
-                          </div>
-                          <p style={{fontSize: '1.05rem', color: 'var(--text-main)', lineHeight: '1.4', margin: 0, opacity: 0.9}}>{src.text}</p>
-                      </a>
-                  ))}
-              </div>
-          ) : (
-              <div className="sources-container" style={{marginBottom: '3.5rem'}}>
+              <div className="sources-container" style={{marginTop: '0.5rem', paddingBottom: '0.5rem'}}>
                 <span className="source-label">Fuentes Trianguladas:</span>
                 {article.sources && article.sources.map((src, idx) => (
                   <a key={idx} href={src.url} target="_blank" rel="noreferrer" className="source-pill">
@@ -414,7 +465,6 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                   </a>
                 ))}
               </div>
-          )}
 
           {/* YOUTUBE IFRAME AUTOMÁTICO */}
           {article.youtubeQuery && (

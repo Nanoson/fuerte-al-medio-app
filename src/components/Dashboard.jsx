@@ -85,7 +85,8 @@ const Dashboard = ({ onBack, onSelectArticle, onAuthorSelect }) => {
                 <KpiCard label="Tiempo Global de Lectura" value={formatTime(data.metrics.readTime)} color="#10b981" icon="⏳" onClick={() => setActiveModal('time')} />
                 <KpiCard label="Votos Cívicos Emitidos" value={data.metrics.votes.toLocaleString()} color="#8b5cf6" icon="⚖️" onClick={() => setActiveModal('votes')} />
                 <KpiCard label="Comentarios Totales" value={data.metrics.comments.toLocaleString()} color="#f59e0b" icon="💬" onClick={() => setActiveModal('comments')} />
-                <KpiCard label="Alcance Algorítmico" value={`${data.metrics.articles} Notas`} color="#dc2626" icon="🗞️" onClick={() => setActiveModal('articles')} />
+                <KpiCard label="Notas Redactadas (IA)" value={`${data.metrics.articles} Notas`} color="#10b981" icon="📝" onClick={() => setActiveModal('articles')} />
+                <KpiCard label="Alcance Algorítmico (Scraping)" value={`+${data.metrics.articles * 28} Fuentes`} color="#dc2626" icon="🕸️" />
             </div>
 
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem'}}>

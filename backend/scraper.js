@@ -1,7 +1,9 @@
 const Parser = require('rss-parser');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const parser = new Parser();
+const parser = new Parser({
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' }
+});
 
 // Expansión a 24 Portales de alto tráfico en Argentina solicitados para el MVP Launch
 const rssSources = [
@@ -31,10 +33,26 @@ const rssSources = [
     
     // WALL STREET & FINANZAS GLOBALES
     { name: 'Yahoo Finance USA', url: 'https://finance.yahoo.com/news/rssindex', bias: 'Financiero', category: 'Economía' },
-    { name: 'Financial Times', url: 'https://www.ft.com/rss/home/us', bias: 'Financiero', category: 'Internacional' }
+    { name: 'Financial Times', url: 'https://www.ft.com/rss/home/us', bias: 'Financiero', category: 'Internacional' },
+
+    // TECNOLOGÍA & CRIPTO
+    { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', bias: 'Silicon Valley', category: 'Tecnología' },
+    { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', bias: 'Consumo/Tech', category: 'Tecnología' },
+    { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', bias: 'Técnico', category: 'Tecnología' },
+    { name: 'Wired', url: 'https://www.wired.com/feed/rss', bias: 'Cultura/Tech', category: 'Tecnología' },
+    { name: 'Hacker News', url: 'https://hnrss.org/newest', bias: 'Cypherpunk/Dev', category: 'Tecnología' },
+    { name: 'a16z', url: 'https://a16z.com/feed/', bias: 'Venture Capital', category: 'Tecnología' },
+    { name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', bias: 'Cripto', category: 'Tecnología' },
+    { name: 'Cointelegraph', url: 'https://cointelegraph.com/rss', bias: 'Cripto', category: 'Tecnología' },
+    { name: 'The Block', url: 'https://www.theblock.co/rss.xml', bias: 'Cripto/Finanzas', category: 'Tecnología' }
 ];
 
 const htmlSources = [
+    // BIG 3 FRONT-PAGE SCANNERS (Determina si la nota está físicamente en la Home Principal del diario)
+    { name: 'Infobae (Portada)', url: 'https://www.infobae.com/', bias: 'Centro-Derecha', type: 'General' },
+    { name: 'Clarín (Portada)', url: 'https://www.clarin.com/', bias: 'Derecha/Oposición', type: 'General' },
+    { name: 'La Nación (Portada)', url: 'https://www.lanacion.com.ar/', bias: 'Centro-Derecha/Conservador', type: 'General' },
+
     { name: 'Bloomberg Línea', url: 'https://www.bloomberglinea.com/latinoamerica/argentina/', bias: 'Mercados Globales', type: 'Economía' },
     { name: 'Olé', url: 'https://www.ole.com.ar/', bias: 'Deportes', type: 'Deportes' },
     { name: 'TyC Sports', url: 'https://www.tycsports.com/', bias: 'Deportes', type: 'Deportes' },
@@ -87,23 +105,32 @@ async function fetchAllNews() {
 
     await Promise.all(rssPromises);
 
-    // HTML Fallback Parsing (Extractor Semántico Universal)
+    // HTML Fallback Parsing (Extractor Semántico Universal Tolerante a Fallos de Nodo)
     const htmlPromises = htmlSources.map(async (srcObj) => {
         try {
-            const { data } = await axios.get(srcObj.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            const { data } = await axios.get(srcObj.url, { 
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' } 
+            });
             const $ = cheerio.load(data);
             let count = 0;
             
-            // Selector Universal para cazar h1, h2, h3 dentro de <article> o grid
-            $('h1 a, h2 a, h3 a, h4 a, article a').slice(0, 30).each((i, el) => {
-                const title = $(el).text().trim();
+            // FASE 53: Extractor de Fuerza Bruta. Busca CUALQUIER tag <a> cuyo formato implique texto largo (Típico de un titular), evadiendo los cambios diarios de H1/H2 o wrappers div que usan los diarios.
+            $('a').each((i, el) => {
+                if (count >= 30) return false; // Detener bucle
+                
+                const title = $(el).text().replace(/\s+/g, ' ').trim();
                 let link = $(el).attr('href');
-                // Ignorar enlaces sueltos, botones o títulos diminutos
-                if (title.length > 30 && link) {
+                
+                // Ignorar enlaces de utilidades, javascript o títulos miniatura
+                if (title.length > 35 && link && !link.includes('javascript:') && !link.includes('mailto:')) {
                     // Completar paths relativos
                     if (link.startsWith('/')) link = new URL(link, srcObj.url).href; 
-                    allArticles.push({ title, link, source: srcObj });
-                    count++;
+                    
+                    // Deduplicación para evitar el mismo hipervínculo 2 veces en distintas zonas de la UI
+                    if (!allArticles.some(a => a.link === link)) {
+                        allArticles.push({ title, link, source: srcObj });
+                        count++;
+                    }
                 }
             });
             console.log(`✅ ${srcObj.name} [HTML Spider]: ${count} links extraídos.`);
@@ -118,7 +145,10 @@ async function fetchAllNews() {
 
 async function scrapeArticleBody(url) {
     try {
-        const { data } = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const { data } = await axios.get(url, { 
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36' },
+            timeout: 10000
+        });
         const $ = cheerio.load(data);
         
         let imageUrl = $('meta[property="og:image"]').attr('content') || null;

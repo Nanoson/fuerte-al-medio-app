@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Header from './components/Header'
 import NewsCard from './components/NewsCard'
+import CortitaCard from './components/CortitaCard'
 import TeamPage from './components/TeamPage'
 import MarketsWidget from './components/MarketsWidget'
 import AuthorAvatar from './components/AuthorAvatar'
@@ -79,7 +80,14 @@ function App() {
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const fetchNews = () => {
-    fetch(`${API_BASE}/api/news`)
+    let queryStr = '';
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const qArticle = params.get('article');
+        if (qArticle) queryStr = `?articleId=${qArticle}`;
+    }
+
+    fetch(`${API_BASE}/api/news${queryStr}`)
       .then(r => r.json())
       .then(data => {
         if(data && data.length > 0) {
@@ -87,11 +95,41 @@ function App() {
             if (selectedArticle) {
                 const freshArticle = data.find(a => String(a.id) === String(selectedArticle.id));
                 if (freshArticle) setSelectedArticle(freshArticle);
+            } else if (typeof window !== 'undefined') {
+                // FASE 72: Deep-Linking Parser para Cold Boots (WhatsApp/Telegram clicks)
+                const params = new URLSearchParams(window.location.search);
+                const qArticle = params.get('article');
+                const qCat = params.get('cat');
+                const qSearch = params.get('search');
+                
+                if (qArticle) {
+                    const linkedTarget = data.find(a => String(a.id) === String(qArticle));
+                    if (linkedTarget) setSelectedArticle(linkedTarget);
+                } else if (qCat) {
+                    setActiveCategory(qCat);
+                } else if (qSearch) {
+                    setSearchQuery(qSearch);
+                }
             }
         }
       })
       .catch(e => console.log("Backend API desconectado.", e));
   };
+
+  // Motor de Búsqueda Híbrido (Server-Side Debounced)
+  useEffect(() => {
+    if (!searchQuery) {
+        fetchNews();
+        return;
+    }
+    const timer = setTimeout(() => {
+        fetch(`${API_BASE}/api/search?q=${encodeURIComponent(searchQuery)}`)
+            .then(r => r.json())
+            .then(data => setNews(data || []))
+            .catch(e => console.error("Search API failed", e));
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     fetchNews();
@@ -136,6 +174,8 @@ function App() {
     if(q !== '') {
         setSelectedArticle(null);
         window.history.replaceState({ activeCategory, selectedArticle: null }, '', `/?search=${encodeURIComponent(q)}`);
+    } else {
+        window.history.replaceState({ activeCategory, selectedArticle: null }, '', `/`);
     }
   }
 
@@ -164,49 +204,67 @@ function App() {
     }).catch(e => console.error(e));
   };
 
-  const searchResults = useMemo(() => {
-    if (!searchQuery) return news;
-    const term = searchQuery.toLowerCase();
-    return news.filter(article => (article.title || '').toLowerCase().includes(term) || (article.summary || '').toLowerCase().includes(term));
-  }, [news, searchQuery]);
-
   const filteredByCategory = useMemo(() => {
-    return activeCategory 
-      ? searchResults.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
-      : searchResults;
-  }, [searchResults, activeCategory]);
+    return activeCategory && activeCategory !== 'CORTITAS Y AL PIE'
+      ? news.filter(a => a.category === activeCategory || (activeCategory === 'Economía y Negocios' && a.category === 'Economía'))
+      : news;
+  }, [news, activeCategory]);
 
   // Mega-bloque de Procesamiento Costoso: Memoizado para no bloquear la UI al abrir una nota
   const { destacadasNews, otrasNews, sortedNews } = useMemo(() => {
-      // 1. Lógica de Clasificación Jerárquica: Prioridad Absoluta al Día Actual, luego Motor de Relevancia (Gemini/Google Trends)
-      const rawSortedNews = [...filteredByCategory].sort((a, b) => {
-        const timeA = new Date((a.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
-        const timeB = new Date((b.updatedAt || '').replace(' ', 'T') + 'Z').getTime() || Date.now();
-        const dayA = Math.floor(timeA / (1000 * 60 * 60 * 24));
-        const dayB = Math.floor(timeB / (1000 * 60 * 60 * 24));
-        if (dayA !== dayB) return dayB - dayA; 
-        
-        // Fase 39: Google Trends Relevance Override
-        let weightA = Number(a.relevanceScore) || 50;
-        let weightB = Number(b.relevanceScore) || 50;
-        
-        // Fase 42: Empujar Tendencias debajo del Hero en la Portada Principal
-        if (!activeCategory && a.category === 'Tendencias') weightA -= 35;
-        if (!activeCategory && b.category === 'Tendencias') weightB -= 35;
-        
-        if (weightA !== weightB) {
-            return weightB - weightA;
-        }
-        
-        // Desempate Cronológico: Si dos noticias tienen exactamente la misma Relevancia, gana la más fresca.
-        return timeB - timeA;
+      // 1. Algoritmo Dinámico de Deterioro Temporal (Time Decay + Hegemonic Filtering)
+      const rawSortedNews = [...filteredByCategory].sort((a,b) => {
+          const calculatePower = (art) => {
+              // (Fase 75: Borrado el filtro Tendencias)
+
+              const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
+
+              // FASE 52: BIFURCACIÓN DE SECCIONES (Fuerza Hiper-Cronológica)
+              // Al estar dentro de una categoría (ej. Deportes), la frescura aniquila a las jerarquías de diarios. Una crónica recien salida SIEMPRE le gana a la "previa" de un hegemónico de hace 16 horas.
+              if (activeCategory) {
+                  return (-ageH * 10000) + ((art.importanceScore || 1) * 100);
+              }
+
+              // PORTADA GLOBAL (Leyes Hegemónicas Conservadoras)
+              let power = 0;
+
+              // 2. The Hegemonic Monopoly (Top 10 exclusivo para medios grandes EN SU PORTADA PRINCIPAL)
+              const majorSources = ['infobae (portada)', 'clarín (portada)', 'clarin (portada)', 'la nación (portada)', 'nacion (portada)'];
+              const isMajor = art.sources && Array.isArray(art.sources) && art.sources.some(s => majorSources.some(m => (s.name || '').toLowerCase().includes(m)));
+              
+              if (isMajor) power += 50000; // Peso inercial masivo
+
+              // 3. Jefe Editorial Inteligente (Rotación Orgánica de Portada)
+              // Nunca expulsar ciegamente a una nota Hegemónica porque habilitaría a fuentes de relleno ("payasadas") a ocupar el Hero.
+              // En su lugar, el algoritmo premia masivamente (+20k) a las notas Hegemónicas frescas (<12hs).
+              // Esto provoca que una NUEVA nota de Clarín asuma naturalmente el puesto #1 (70k pts), empujando a la VIEJA nota de Clarín (50k pts) al puesto #2 o #3 orgánicamente.
+              if (ageH <= 12) {
+                  power += 20000; 
+              } else if (ageH > 12 && ageH <= 24) {
+                  power += 5000;
+              }
+
+              // 4. Métrica Orgánica Acumulativa
+              power += (art.importanceScore || 1) * 500;
+              power -= ageH * 250; 
+
+              // 5. Destierro de Soft-News Críticas o Basura Autónoma
+              const lowTitle = (art.title || '').toLowerCase();
+              if (lowTitle.includes('quiniela') || lowTitle.includes('quini 6') || lowTitle.includes('loto') || lowTitle.includes('telechino') || lowTitle.includes('horóscopo') || lowTitle.includes('sorpresa') || lowTitle.includes('café frio') || lowTitle.includes('cafe frio')) {
+                  power -= 200000; // Literalmente hundido al núcleo terrestre
+              }
+
+              return power;
+          };
+
+          return calculatePower(b) - calculatePower(a);
       });
 
       const uniqueSortedNews = filterDuplicates(rawSortedNews);
 
-      const todayDateStr = new Date().toLocaleDateString('es-AR');
-      // Destacadas: Solo artículos de Hoy calificados como Mínimamente Relevantes (>65) por la IA (excluyendo Tendencias para cuidar la línea editorial del Hero).
-      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.category !== 'Tendencias' && a.date === todayDateStr && (Number(a.relevanceScore) || 50) >= 65).slice(0, 20);
+      // FASE 56/59: BARRERA ESTRICTA DE "SÓLO HOY" EN EL HERO (Sincronizado a ARG Timezone)
+      const todayDateStr = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+      const rawDestacadasNews = activeCategory ? [] : uniqueSortedNews.filter(a => a.date === todayDateStr).slice(0, 16);
       const outDestacadas = stabilizeImages(rawDestacadasNews);
       
       const rawOtrasNews = activeCategory ? [] : uniqueSortedNews.filter(a => activeCategory ? false : !rawDestacadasNews.includes(a));
@@ -219,21 +277,43 @@ function App() {
     const isForeign = (cat) => ['Internacional', 'Deportes', 'Espectáculos', 'Mercados'].includes(cat);
 
     // Separación geográfica previa a la partición asimétrica
-    const locals = sortedNews.filter(a => !isForeign(a.category));
-    const foreigners = sortedNews.filter(a => isForeign(a.category));
+    // FASE 60: PRUEBA DE VIDA (EXTRACCIÓN EXPLÍCITA Y CENSURA FRONTAL)
+    const filteredGlobalNews = sortedNews.filter(a => {
+        const lowerTitle = (a.title || '').toLowerCase();
+        // Extracción quirúrgica solicitada por el usuario
+        if (lowerTitle.includes('imprudencia estatista') || lowerTitle.includes('fallo ypf') || lowerTitle.includes('alicia')) return false;
+        return true;
+    });
+
+    const locals = filteredGlobalNews.filter(a => !isForeign(a.category));
+    const foreigners = filteredGlobalNews.filter(a => isForeign(a.category));
 
     // Balanceo Independiente
-    // Fase 43: Bloquear estrictamente 'Tendencias' de la sección superior (Destacadas) para cuidar el editorial.
-    const localTopCandidates = locals.filter(a => activeCategory || a.category !== 'Tendencias');
+    // Fase 43/60: EXIGIR QUE EL HERO SEA ESTRICTAMENTE DE HOY
+    const todayStr = new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+    const localTopCandidates = locals.filter(a => (!activeCategory ? a.date === todayStr : true));
     const localTop = localTopCandidates.slice(0, 8);
     const localRest = locals.filter(a => !localTop.includes(a));
 
-    const foreignTopCandidates = foreigners.filter(a => activeCategory || a.category !== 'Tendencias');
+    const foreignTopCandidates = foreigners;
     const foreignTop = foreignTopCandidates.slice(0, 8);
     const foreignRest = foreigners.filter(a => !foreignTop.includes(a));
 
     if (activeCategory === 'NUESTRO EQUIPO') {
        return <TeamPage onAuthorSelect={handleAuthorSelect} />;
+    }
+
+    if (activeCategory === 'CORTITAS Y AL PIE') {
+       return (
+         <>
+           <h2 className="feed-header">Cortitas y al pie</h2>
+           <div className="cortitas-grid" style={{marginBottom: '4rem'}}>
+             {stabilizeImages(sortedNews).slice(0, 30).map((article) => (
+               <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
+             ))}
+           </div>
+         </>
+       );
     }
 
     if (selectedAuthor) {
@@ -303,6 +383,18 @@ function App() {
                 {stabilizeImages(foreignTop).map((article, idx) => (
                    <NewsCard key={article.id} article={article} onSelect={handleSelectArticle} isHero={false} onCategorySelect={handleCategorySelect} onUpdate={fetchNews} onAuthorSelect={handleAuthorSelect} />
                 ))}
+            </div>
+        </div>
+
+        <div className="cortitas-section">
+            <h2 className="cortitas-section-title" onClick={() => handleCategorySelect('CORTITAS Y AL PIE')}>
+               Cortitas y al pie
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '4px'}}><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </h2>
+            <div className="cortitas-grid">
+               {stabilizeImages(sortedNews).slice(0, 9).map((article) => (
+                  <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
+               ))}
             </div>
         </div>
 

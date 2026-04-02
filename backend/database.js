@@ -31,6 +31,7 @@ pool.query(`
         comments TEXT DEFAULT '[]',
         importanceScore INTEGER DEFAULT 1,
         copete TEXT,
+        cortita TEXT,
         imageUrl TEXT,
         youtubeQuery TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

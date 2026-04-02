@@ -42,35 +42,57 @@ app.get('/api/force-scrape', async (req, res) => {
     res.json({ success: true, message: "Scraping cycle deployed to background workers." });
 });
 
+const formatRowToArticle = (row) => ({
+    id: row.id,
+    authorId: row.authorid || 'cuesta_pol',
+    title: row.title,
+    category: row.category,
+    biasNeutralization: row.biasneutralization,
+    date: row.date,
+    summary: row.summary,
+    conflictPoints: row.conflictpoints,
+    sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
+    related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
+    topicKey: row.topickey,
+    likes: row.likes,
+    dislikes: row.dislikes,
+    userVotesCount: row.uservotescount,
+    userVotesSum: row.uservotessum,
+    comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
+    importanceScore: row.importancescore,
+    relevanceScore: row.relevancescore || 50,
+    copete: row.copete,
+    cortita: row.cortita,
+    imageUrl: row.imageurl,
+    youtubeQuery: row.youtubequery,
+    createdAt: row.createdat,
+    updatedAt: row.updatedat
+});
+
 app.get('/api/news', async (req, res) => {
     try {
-        const { rows } = await db.query(`SELECT * FROM articles ORDER BY updatedat DESC`);
-        const articles = rows.map(row => ({
-            id: row.id,
-            authorId: row.authorid || 'cuesta_pol',
-            title: row.title,
-            category: row.category,
-            biasNeutralization: row.biasneutralization,
-            date: row.date,
-            summary: row.summary,
-            conflictPoints: row.conflictpoints,
-            sources: typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []),
-            related: typeof row.related === 'string' ? JSON.parse(row.related) : (row.related || []),
-            topicKey: row.topickey,
-            likes: row.likes,
-            dislikes: row.dislikes,
-            userVotesCount: row.uservotescount,
-            userVotesSum: row.uservotessum,
-            comments: typeof row.comments === 'string' ? JSON.parse(row.comments) : (row.comments || []),
-            importanceScore: row.importancescore,
-            relevanceScore: row.relevancescore || 50,
-            copete: row.copete,
-            imageUrl: row.imageurl,
-            youtubeQuery: row.youtubequery,
-            createdAt: row.createdat,
-            updatedAt: row.updatedat
-        }));
-        res.json(articles);
+        const articleId = req.query.articleId;
+        let queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' ORDER BY updatedat DESC`;
+        let params = [];
+
+        if (articleId && !isNaN(parseInt(articleId))) {
+            queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' OR id = $1 ORDER BY updatedat DESC`;
+            params = [parseInt(articleId)];
+        }
+
+        const { rows } = await db.query(queryStr, params);
+        res.json(rows.map(formatRowToArticle));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.json([]);
+        const { rows } = await db.query(`SELECT * FROM articles WHERE title ILIKE $1 OR summary ILIKE $1 OR copete ILIKE $1 ORDER BY updatedat DESC LIMIT 150`, [`%${q}%`]);
+        res.json(rows.map(formatRowToArticle));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -208,8 +230,10 @@ const runScrapingCycle = async () => {
     let rawArticles = [];
     let globalTrends = [];
     try {
-        globalTrends = await getLiveTrends();
-        console.log(`📈 Google Trends capturadas: ${globalTrends.length} keywords.`);
+        // FASE 56/59: Suspensión TOTAL de Tendencias Automáticas Requerida por el Editor
+        // globalTrends = await getLiveTrends();
+        globalTrends = []; 
+        console.log(`📈 Tendencias Manuales Suspendidas (Cobertura Universal Activada).`);
         // 1. Raspar los 24 portales masivos
         rawArticles = await fetchAllNews();
         console.log(`✅ Extracción completada. Evaluando ${rawArticles.length} titulares crudos.`);
@@ -225,8 +249,17 @@ const runScrapingCycle = async () => {
 
     let clusters = groupArticles(rawArticles);
     
-    // Jerarquía Matemática: Priorizar por VOLUMEN DE FUENTES ÚNICAS DISTINTAS impactando la matriz de relevancia
+    // FASE 56: GARANTÍA ABSOLUTA DE LAS PORTADAS DE LOS 3 GRANDES
+    // Jerarquía Matemática: Las notas marcadas como `(Portada)` tienen Prioridad Cero sobre todo lo demás para ser Ingeridas por la IA.
     clusters.sort((a,b) => {
+        const aHasPortada = a.articles.some(art => art.source?.name?.includes('(Portada)'));
+        const bHasPortada = b.articles.some(art => art.source?.name?.includes('(Portada)'));
+        
+        // Prioridad 1: Que esté físicamente en la Portada de los diarios grandes (Infobae, Clarín, La Nación)
+        if (aHasPortada && !bHasPortada) return -1;
+        if (!aHasPortada && bHasPortada) return 1;
+
+        // Prioridad 2: Volumen de Fuentes (Como siempre)
         const uniqueA = new Set(a.articles.map(art => art.source.name)).size;
         const uniqueB = new Set(b.articles.map(art => art.source.name)).size;
         if (uniqueB !== uniqueA) return uniqueB - uniqueA;
@@ -273,26 +306,33 @@ const runScrapingCycle = async () => {
         targetCluster.clusterImage = clusterImage;
 
         try {
-            // Forzar categoría Internacional interceptando rutas foráneas explícitas (Bypassea AI hallucinations)
+            // Interceptores de Categoría: Fuerzan el Vertical si la IA falla
             let isInternacional = targetCluster.articles.some(a => ['BBC', 'New York', 'País', 'Tercera'].some(kw => a.source.name && a.source.name.includes(kw)));
+            let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
             
+            // Fase 78: Interceptor Tecnología & Cripto
+            let isTecnologia = targetCluster.articles.some(a => 
+                ['TechCrunch', 'The Verge', 'Ars Technica', 'Wired', 'Hacker News', 'a16z', 'CoinDesk', 'Cointelegraph', 'The Block'].some(kw => a.source.name && a.source.name.includes(kw)) ||
+                ['bitcoin', 'cripto', 'crypto', 'ethereum', 'tecnología', 'inteligencia artificial'].some(kw => a.title.toLowerCase().includes(kw))
+            );
+
             const finalNews = await neutralizeArticles(targetCluster, globalTrends);
             if (finalNews) {
                 if (isInternacional) finalNews.category = 'Internacional';
-                let isMercados = targetCluster.articles.some(a => ['Yahoo', 'Bloomberg', 'Financial'].some(kw => a.source.name && a.source.name.includes(kw)));
                 if (isMercados) finalNews.category = 'Mercados';
+                if (isTecnologia) finalNews.category = 'Tecnología';
 
                 await db.query(`
-                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore, imagecaption)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, cortita=EXCLUDED.cortita, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, imagecaption=EXCLUDED.imagecaption, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalNews.title,
                     finalNews.category,
                     finalNews.authorId || 'valmont_pol',
                     finalNews.biasNeutralization,
-                    new Date().toLocaleDateString('es-AR'),
+                    new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
                     finalNews.summary,
                     finalNews.conflictPoints,
                     JSON.stringify(finalNews.sources),
@@ -300,9 +340,11 @@ const runScrapingCycle = async () => {
                     finalNews.topicKey,
                     new Set(targetCluster.articles.map(a => a.source.name)).size,
                     finalNews.copete || finalNews.Copete || null,
+                    finalNews.cortita || null,
                     targetCluster.clusterImage || null,
                     finalNews.youtubeQuery || null,
-                    finalNews.relevanceScore || 50
+                    finalNews.relevanceScore || 50,
+                    finalNews.imageCaption || null
                 ]);
                 console.log(`✨ Guardado en PostgreSQL [Firma: ${finalNews.authorId}]: "${finalNews.title.substring(0, 40)}..."`);
             }
@@ -312,8 +354,10 @@ const runScrapingCycle = async () => {
     }
     
     // -------------------------------------------------------------
-    // FASE 41: BLOQUE SOCIOLÓGICO Y TENDENCIAS REDDIT
+    // FASE 41/59: BLOQUE SOCIOLÓGICO Y TENDENCIAS REDDIT (SUSPENDIDO)
+    // El Jefe Editorial solicitó suspender temporalmente el scraping empírico de Redes Sociales.
     // -------------------------------------------------------------
+    /*
     try {
         const globalSocialTrends = await fetchSocialTrends();
         console.log(`\n🗣️ Procesando Cerebro Analítico de Ethan Hayes (${globalSocialTrends.length} debates en total)...`);
@@ -324,16 +368,16 @@ const runScrapingCycle = async () => {
             
             if (finalTrend) {
                 await db.query(`
-                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, imageUrl, youtubeQuery, relevancescore)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
                     ON CONFLICT(topicKey) DO UPDATE SET 
-                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
+                        title=EXCLUDED.title, authorId=EXCLUDED.authorId, summary=EXCLUDED.summary, conflictPoints=EXCLUDED.conflictPoints, importanceScore=EXCLUDED.importanceScore, copete=EXCLUDED.copete, cortita=EXCLUDED.cortita, imageUrl=EXCLUDED.imageUrl, youtubeQuery=EXCLUDED.youtubeQuery, relevancescore=EXCLUDED.relevancescore, updatedAt=CURRENT_TIMESTAMP
                 `, [
                     finalTrend.title,
                     finalTrend.category,
                     finalTrend.authorId || 'hayes_soc',
                     finalTrend.biasNeutralization,
-                    new Date().toLocaleDateString('es-AR'),
+                    new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
                     finalTrend.summary,
                     finalTrend.conflictPoints,
                     JSON.stringify(finalTrend.sources), // Guardamos los comentarios crudos aquí
@@ -341,6 +385,7 @@ const runScrapingCycle = async () => {
                     finalTrend.topicKey,
                     new Set(finalTrend.sources.map(s => s.name)).size, 
                     finalTrend.copete || "Métricas sociales analizadas",
+                    null,
                     null, // Las tendencias no tienen porta hero images obligatorias
                     null,
                     finalTrend.relevanceScore || 65
@@ -353,6 +398,7 @@ const runScrapingCycle = async () => {
     } catch (error) {
          console.error(`⚠️ Falla sistémica en el motor de Tendencias Sociales:`, error.message);
     }
+    */
 
     console.log(`[${new Date().toISOString()}] 🏁 Ciclo de Recolección finalizado.`);
 };
@@ -364,6 +410,24 @@ cron.schedule('0 */2 * * *', () => { runScrapingCycle(); });
 app.get('/api/force-scrape', async (req, res) => {
     res.json({ success: true, message: "🚀 Ciclo Maestro de Extracción iniciado en segundo plano." });
     runScrapingCycle();
+});
+
+// ---------------------------------------------------
+// FASE 65: ENDPOINT DE DIAGNÓSTICO EN VIVO (TRANSPARENCIA CLOUD)
+// ---------------------------------------------------
+app.get('/api/debug-scraper', async (req, res) => {
+    try {
+        console.log("🔍 Sondeando Modelos de la API de Google...");
+        const axios = require('axios');
+        if (!process.env.GEMINI_API_KEY) {
+            return res.json({ error: "No hay GEMINI_API_KEY configurada en el servidor en la nube." });
+        }
+        
+        const response = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+        res.json({ success: true, list: response.data });
+    } catch (e) {
+        res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.response ? e.response.data : e.message });
+    }
 });
 
 const PORT = process.env.PORT || 3001;
