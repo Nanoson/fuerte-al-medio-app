@@ -99,6 +99,43 @@ app.get('/api/search', async (req, res) => {
 });
 
 // ---------------------------------------------------
+// REST API - OPINIONES DE LECTORES
+// ---------------------------------------------------
+app.post('/api/opinions', async (req, res) => {
+    const { alias, title, body } = req.body;
+    try {
+        if (!title || !body) return res.status(400).json({error: "Falta título o contenido"});
+        if (body.length > 500) return res.status(400).json({error: "Límite de 500 caracteres excedido"});
+        
+        await db.query(`
+            INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        `, [
+            title,
+            'OPINIONES DE LECTORES',
+            'lector_invitado',
+            50,
+            new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
+            body,
+            "Opinión personal del lector.",
+            "[]",
+            "[]",
+            "opinion_" + Date.now() + Math.random().toString(36).substring(7),
+            1,
+            alias || "Anónimo",
+            null,
+            null,
+            null,
+            50
+        ]);
+        res.json({success: true});
+    } catch(err) {
+        console.error("Error posteando opinion:", err);
+        res.status(500).json({error: err.message});
+    }
+});
+
+// ---------------------------------------------------
 // REST API - VOTOS CÍVICOS E HILOS TWITTER-LIKE
 // ---------------------------------------------------
 app.post('/api/news/:id/action', async (req, res) => {

@@ -25,7 +25,8 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
     'Deportes', 
     'Mercados',
     'Tecnología',
-    'CORTITAS Y AL PIE'
+    'CORTITAS Y AL PIE',
+    'OPINIONES DE LECTORES'
   ];
 
   return (

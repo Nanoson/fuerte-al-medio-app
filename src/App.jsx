@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Header from './components/Header'
 import NewsCard from './components/NewsCard'
 import CortitaCard from './components/CortitaCard'
+import OpinionForm from './components/OpinionForm'
+import OpinionCard from './components/OpinionCard'
 import TeamPage from './components/TeamPage'
 import MarketsWidget from './components/MarketsWidget'
 import AuthorAvatar from './components/AuthorAvatar'
@@ -310,6 +312,25 @@ function App() {
            <div className="cortitas-grid" style={{marginBottom: '4rem'}}>
              {stabilizeImages(sortedNews).slice(0, 30).map((article) => (
                <CortitaCard key={article.id} article={article} onSelect={handleSelectArticle} />
+             ))}
+           </div>
+         </>
+       );
+    }
+
+    if (activeCategory === 'OPINIONES DE LECTORES') {
+       return (
+         <>
+           <div className="opiniones-header-container">
+             <h2 className="feed-header" style={{ marginBottom: '10px', display: 'inline-block', borderBottom: 'none' }}>OPINIONES DE LECTORES</h2>
+             <span className="opiniones-subtitle">Tu espacio para escribir y expresarte.</span>
+           </div>
+           
+           <OpinionForm onPublished={fetchNews} />
+           
+           <div className="opiniones-masonry" style={{marginBottom: '4rem'}}>
+             {sortedNews.map((article) => (
+                <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} />
              ))}
            </div>
          </>
