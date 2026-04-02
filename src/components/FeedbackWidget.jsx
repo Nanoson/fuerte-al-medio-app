@@ -62,7 +62,7 @@ const FeedbackWidget = ({ currentContextId = null, currentContextTitle = null })
                 ) : (
                     <>
                         <span style={{fontSize: '1.2rem'}}>💡</span>
-                        Danos tu Opinión
+                        Danos Feedback
                     </>
                 )}
             </button>

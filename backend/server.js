@@ -72,11 +72,11 @@ const formatRowToArticle = (row) => ({
 app.get('/api/news', async (req, res) => {
     try {
         const articleId = req.query.articleId;
-        let queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' ORDER BY updatedat DESC`;
+        let queryStr = `SELECT * FROM articles WHERE (createdat >= NOW() - INTERVAL '3 days' OR (category = 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '7 days')) ORDER BY updatedat DESC`;
         let params = [];
 
         if (articleId && !isNaN(parseInt(articleId))) {
-            queryStr = `SELECT * FROM articles WHERE createdat >= NOW() - INTERVAL '3 days' OR id = $1 ORDER BY updatedat DESC`;
+            queryStr = `SELECT * FROM articles WHERE (createdat >= NOW() - INTERVAL '3 days' OR (category = 'OPINIONES DE LECTORES' AND createdat >= NOW() - INTERVAL '7 days')) OR id = $1 ORDER BY updatedat DESC`;
             params = [parseInt(articleId)];
         }
 

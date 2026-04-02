@@ -217,6 +217,13 @@ function App() {
       // 1. Algoritmo Dinámico de Deterioro Temporal (Time Decay + Hegemonic Filtering)
       const rawSortedNews = [...filteredByCategory].sort((a,b) => {
           const calculatePower = (art) => {
+              // Si la categoría activa es OPINIONES, ignorar fechas y ordenar netamente por TRACCION TOTAL (userVotesCount).
+              if (activeCategory === 'OPINIONES DE LECTORES') {
+                  const artAgeDays = (Date.now() - new Date(art.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24);
+                  // Opcional: penalización ultra liviana solo para desempatar empates de 0 tracción.
+                  return (art.userVotesCount || 0) * 1000 - artAgeDays;
+              }
+
               // (Fase 75: Borrado el filtro Tendencias)
 
               const ageH = (Date.now() - new Date(art.date || art.createdAt || new Date()).getTime()) / (1000 * 60 * 60);
@@ -442,6 +449,25 @@ function App() {
   };
 
   const renderSingleArticle = () => {
+    if (selectedArticle.category === 'OPINIONES DE LECTORES') {
+       return (
+         <div className="single-view-container" style={{animation: "fadeIn 0.3s ease", maxWidth: '700px', margin: '0 auto'}}>
+             <div 
+                 style={{color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', marginBottom: '2rem', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}
+                 onClick={() => {
+                     setActiveCategory('OPINIONES DE LECTORES');
+                     setSelectedArticle(null);
+                     window.history.pushState({ activeCategory: 'OPINIONES DE LECTORES', selectedArticle: null }, '', `/?cat=OPINIONES%20DE%20LECTORES`);
+                 }}
+             >
+                 ← Leer mas Opiniones de los lectores
+             </div>
+             
+             <OpinionCard article={selectedArticle} API_BASE={API_BASE} />
+         </div>
+       );
+    }
+
     const otherNews = news.filter(a => String(a.id) !== String(selectedArticle.id)).slice(0, 6);
     
     return (

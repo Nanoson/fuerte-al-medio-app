@@ -38,10 +38,14 @@ const OpinionCard = ({ article, API_BASE }) => {
         }
     };
 
+    const displayDate = article.createdAt 
+        ? new Date(article.createdAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+        : article.date;
+
     return (
         <div className="opinion-card">
             <h4>{article.title}</h4>
-            <span className="opinion-alias">Por: {article.copete || "Anónimo"}</span>
+            <span className="opinion-alias">Por: {article.copete || "Anónimo"} &bull; {displayDate}</span>
             <p className="opinion-body">"{article.summary}"</p>
             
             <div className="opinion-footer">
