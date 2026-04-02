@@ -16,7 +16,7 @@ const TeamPage = ({ onAuthorSelect }) => {
         {authors.map(author => (
           <div key={author.id} style={{background: 'var(--card-bg)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column'}}>
             <div style={{height: '180px', background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', position: 'relative'}}>
-                <AuthorAvatar authorId={author.id} size={110} />
+                <AuthorAvatar authorId={author.id} size={110} avatarPath={author.avatar} />
             </div>
             <div style={{padding: '1.5rem', flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
                 <h3 style={{fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: 'var(--text-main)', marginBottom: '0.2rem'}}>{author.name}</h3>

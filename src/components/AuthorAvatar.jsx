@@ -30,21 +30,45 @@ const avatarVectors = {
     hayes_soc: '<circle cx="12" cy="7" r="4.5" /><path d="M4 22 C4 15, 20 15, 20 22 Z" /><circle cx="10" cy="7" r="1.5" fill="var(--text-main)" stroke="var(--bg-color)" strokeWidth="0.8"/><circle cx="14" cy="7" r="1.5" fill="var(--text-main)" stroke="var(--bg-color)" strokeWidth="0.8"/><line x1="11.5" y1="7" x2="12.5" y2="7" stroke="var(--bg-color)" strokeWidth="0.8"/>'
 };
 
-const AuthorAvatar = ({ authorId, size = 60 }) => {
-    // Fallback genérico "Default Neutral Shadow" si el ID no existe
+const AuthorAvatar = ({ authorId, size = 60, avatarPath = null }) => {
+    // Check if we have an actual image path (not a silhouette placeholder)
+    const isImagePath = avatarPath && typeof avatarPath === 'string' && avatarPath.includes('.png');
+
+    if (isImagePath) {
+        return (
+            <img
+                src={avatarPath}
+                alt={authorId}
+                style={{
+                    width: size,
+                    height: size + 10,
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    marginBottom: '-2px',
+                    transition: 'all 0.3s'
+                }}
+                onError={(e) => {
+                    // Fallback to SVG if image fails to load
+                    e.target.style.display = 'none';
+                }}
+            />
+        );
+    }
+
+    // Fallback to SVG vectors
     const defaultAvatar = '<circle cx="12" cy="8" r="5" /><path d="M4 22 C4 15, 20 15, 20 22 Z" />';
     const rawSvg = avatarVectors[authorId] || defaultAvatar;
 
     return (
-        <svg 
-            width={size} 
-            height={size + 10} 
-            viewBox="0 0 24 24" 
-            fill="var(--text-main)" 
-            style={{ 
+        <svg
+            width={size}
+            height={size + 10}
+            viewBox="0 0 24 24"
+            fill="var(--text-main)"
+            style={{
                 marginBottom: '-2px', // Anclaje al borde inferior del contenedor
-                opacity: 0.85, 
-                transition: 'all 0.3s' 
+                opacity: 0.85,
+                transition: 'all 0.3s'
             }}
             dangerouslySetInnerHTML={{ __html: rawSvg }}
         />
