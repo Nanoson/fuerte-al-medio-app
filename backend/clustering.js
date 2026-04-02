@@ -1,12 +1,12 @@
-const { removeStopwords, spa } = require('stopword');
+const { removeStopwords, spa, eng } = require('stopword');
 
 function cleanTitle(title) {
     // Pasar a minúsculas y quitar puntuación
     const clean = title.toLowerCase().replace(/[^\w\sáéíóúüñ]/g, ' ');
     // Tokenizar
     const tokens = clean.split(/\s+/).filter(w => w.length > 2);
-    // Quitar stopwords (español)
-    return removeStopwords(tokens, spa);
+    // Quitar stopwords (español y también inglés para portales anglosajones como Yahoo/TechCrunch)
+    return removeStopwords(tokens, [...spa, ...eng]);
 }
 
 function calculateSimilarity(tokens1, tokens2) {
@@ -34,7 +34,7 @@ function groupArticles(articles) {
         for (let cluster of clusters) {
             // Comparamos contra el título principal del cluster
             const sim = calculateSimilarity(tokens, cluster.mainTokens);
-            if (sim > 0.40) { // Umbral bajo/medio para agrupar temas
+            if (sim > 0.30) { // Umbral bajo/agresivo para combatir excesos en feeds RSS en inglés
                 // Solo agregar si el SOURCE no está ya en el cluster (evitar 2 notas de Clarín juntas)
                 const sourceExists = cluster.articles.some(a => a.source.name === article.source.name);
                 if (!sourceExists) {
