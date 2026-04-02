@@ -10,6 +10,7 @@ const OpinionForm = ({ onPublished }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if(!alias || !title || !body) return alert('Completa todos los campos');
+        if(body.trim().length < 15) return alert('La nota debe tener al menos 15 caracteres para publicarse');
         if(body.length > 1200) return alert('El máximo es 1200 caracteres');
         
         setIsSubmitting(true);
@@ -53,7 +54,7 @@ const OpinionForm = ({ onPublished }) => {
                 <input type="text" placeholder="Nombre / Alias *" value={alias} onChange={e=>setAlias(e.target.value)} maxLength={50} required />
                 <input type="text" placeholder="Título de tu nota *" value={title} onChange={e=>setTitle(e.target.value)} maxLength={100} required />
                 <div className="textarea-wrapper">
-                    <textarea placeholder="Cuerpo de la nota (max 1200 caracteres) *" value={body} onChange={e=>setBody(e.target.value)} maxLength={1200} required rows={7}></textarea>
+                    <textarea placeholder="Cuerpo de la nota (min 15 - max 1200 caracteres) *" value={body} onChange={e=>setBody(e.target.value)} minLength={15} maxLength={1200} required rows={7}></textarea>
                     <span className="char-count">{body.length}/1200</span>
                 </div>
                 <button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Publicando...' : 'Publicar Nota'}</button>

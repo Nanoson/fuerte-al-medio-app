@@ -113,7 +113,13 @@ app.post('/api/opinions', async (req, res) => {
     const { alias, title, body } = req.body;
     try {
         if (!alias || !title || !body) return res.status(400).json({error: "Los campos Nombre/Alias, Título y Cuerpo son estrictamente obligatorios"});
+        if (body.trim().length < 15) return res.status(400).json({error: "La nota es demasiado corta. Debe tener al menos 15 caracteres."});
         if (body.length > 1200) return res.status(400).json({error: "Límite de 1200 caracteres excedido"});
+        
+        const profanityRegex = /\b(puto|puta|putos|putas|pelotudo|pelotuda|boludo|boluda|mierda|carajo|forro|forra|concha|mongolico|mogólico|mogolica|trola|trolo|trolazo|tarado|tarada|idiota|imbecil|imbécil|pito|choto|chota|verga|culo|orto)\b/i;
+        if (profanityRegex.test(body) || profanityRegex.test(title) || profanityRegex.test(alias)) {
+            return res.status(400).json({error: "Lenguaje Inapropiado: No se admiten insultos, agresiones ni palabras obscenas."});
+        }
         
         await db.query(`
             INSERT INTO articles (title, category, authorId, biasNeutralization, date, summary, conflictPoints, sources, related, topicKey, importanceScore, copete, cortita, imageUrl, youtubeQuery, relevancescore)
