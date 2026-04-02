@@ -3,7 +3,7 @@
     "id": "valmont_pol",
     "name": "Sebastián Valmont",
     "role": "Editorialista de Política y Economía",
-    "avatar": " silhouette_1 ",
+    "avatar": "/Sebastian_Valmont.png",
     "bio": "Periodista especializado en macroeconomía y análisis político. Férreo defensor del libre mercado y las libertades individuales, Valmont desmenuza la coyuntura nacional con una mirada crítica hacia el intervencionismo estatal, priorizando siempre los datos fiscales y la integridad institucional."
   },
   {
@@ -59,14 +59,14 @@
     "id": "vieri_dep",
     "name": "Héctor \"El Tano\" Vieri",
     "role": "Columnista de Fútbol y Polémicas",
-    "avatar": " silhouette_9 ",
+    "avatar": "/Hector_Vieri.png",
     "bio": "Dueño de una prosa volcánica y frontal. El Tano vive y respira el fútbol desde la tribuna, siempre apuntando a la polémica arbitral, el fuego de los vestuarios y la exigencia desmedida. Para él, en el deporte no hay grises."
   },
   {
     "id": "bernal_dep",
     "name": "Diego Bernal",
     "role": "Cronista Deportivo",
-    "avatar": " silhouette_10 ",
+    "avatar": "/Diego_Bernal.png",
     "bio": "Amante de la épica deportiva y las grandes hazañas. Bernal aborda el deporte desde su costado más humano y literario, relatando cada partido como una batalla donde el honor, el sudor y la gloria son los verdaderos protagonistas."
   },
   {
@@ -80,7 +80,7 @@
     "id": "conti_dep",
     "name": "Valeria Conti",
     "role": "Corresponsal de Deportes",
-    "avatar": " silhouette_12 ",
+    "avatar": "/Valeria_Conti.png",
     "bio": "Redactora encargada del minuto a minuto, partes médicos y cobertura oficial. Conti entrega la información deportiva en tiempo real, garantizando precisión absoluta en resultados y declaraciones de los protagonistas."
   },
   {
@@ -94,14 +94,14 @@
     "id": "damico_mer",
     "name": "Javier D'Amico",
     "role": "Consultor de Riesgo y Finanzas",
-    "avatar": " silhouette_14 ",
+    "avatar": "/Javier_DAmica.png",
     "bio": "Conocido por sus proyecciones audaces y su lectura del \"humor social\" inversor. D'Amico combina la psicología del mercado con el contexto político para advertir sobre burbujas y oportunidades de alto riesgo."
   },
   {
     "id": "blanc_mer",
     "name": "Victoria Blanc",
     "role": "Especialista en Macroeconomía",
-    "avatar": " silhouette_15 ",
+    "avatar": "/Victoria_Blanc.png",
     "bio": "Su análisis se fundamenta estrictamente en la matemática de los Bancos Centrales. Blanc desarticula las narrativas políticas exponiendo la realidad cruda de la inflación, el PBI y la emisión monetaria mediante el uso intensivo de datos."
   },
   {
