@@ -431,7 +431,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
                                   <li key={`b-${i}`} style={{display: 'flex', gap: '1rem', alignItems: 'flex-start'}}>
                                       <span style={{color: 'var(--accent)', fontSize: '1.2rem', lineHeight: '1.5'}}>•</span>
                                       <span style={{fontSize: '1.15rem', lineHeight: '1.6', color: 'var(--text-main)', fontWeight: 500}}>
-                                          {renderBoldText(b.replace(/^[-•]\s*/, ''))}
+                                          {renderBoldText(b.replace(/^[-•*]\s*/, ''))}
                                       </span>
                                   </li>
                               ))}
@@ -441,7 +441,7 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
 
                   for (let idx = 0; idx < paragraphs.length; idx++) {
                       const paragraph = paragraphs[idx];
-                      const isBullet = paragraph.trim().startsWith('-') || paragraph.trim().startsWith('•');
+                      const isBullet = paragraph.trim().startsWith('-') || paragraph.trim().startsWith('•') || paragraph.trim().startsWith('* ');
                       
                       if (isBullet) {
                           currentBullets.push(paragraph);
