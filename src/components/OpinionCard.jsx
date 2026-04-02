@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const OpinionCard = ({ article, API_BASE, onSelect }) => {
+const OpinionCard = ({ article, API_BASE, onSelect, isCompact }) => {
     const [userVote, setUserVote] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem(`opinion_vote_${article.id}`);
@@ -76,12 +76,12 @@ const OpinionCard = ({ article, API_BASE, onSelect }) => {
         : article.date;
 
     return (
-        <div className="opinion-card" onClick={handleCardClick} style={{ cursor: onSelect ? 'pointer' : 'default' }}>
+        <div className="opinion-card" onClick={handleCardClick} style={{ cursor: onSelect ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h4>{article.title}</h4>
             <span className="opinion-alias">Por: {article.copete || "Anónimo"} &bull; {displayDate}</span>
-            <p className="opinion-body">"{article.summary}"</p>
+            <p className={isCompact ? "opinion-body-compact" : "opinion-body"} style={isCompact ? { flexGrow: 1 } : {}}>"{article.summary}"</p>
             
-            <div className="opinion-footer">
+            <div className="opinion-footer" style={{ marginTop: 'auto' }}>
                 <div className="opinion-voting">
                     <button className={`vote-btn up ${userVote === 100 ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); handleVote(100); }}>
                         👍 <span>{Math.floor(localVotesSum / 100)}</span>

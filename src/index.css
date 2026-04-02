@@ -540,11 +540,6 @@ a {
   color: var(--text-secondary);
   line-height: 1.5;
   margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   flex-grow: 1;
 }
 
@@ -564,6 +559,11 @@ a {
 }
 
 /* Opiniones de Lectores */
+.opiniones-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.opinion-body-compact {
+  font-size: 1.05rem; line-height: 1.6; color: var(--text-main); font-style: italic; white-space: pre-line; word-wrap: break-word;
+  display: -webkit-box; -webkit-line-clamp: 6; line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+}
 .opiniones-header-container { text-align: center; margin: 20px 0; }
 .opiniones-subtitle { font-style: italic; color: var(--accent); margin-top: -10px; display: block; margin-bottom: 20px; font-weight: 600; }
 

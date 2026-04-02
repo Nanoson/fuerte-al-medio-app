@@ -455,9 +455,9 @@ function App() {
                    Opiniones de Lectores
                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '4px'}}><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </h2>
-                <div className="opiniones-masonry">
+                <div className="opiniones-grid">
                    {homeOpinions.map((article) => (
-                      <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} onSelect={handleSelectArticle} />
+                      <OpinionCard key={article.id} article={article} API_BASE={import.meta.env.VITE_API_URL || 'http://localhost:3001'} onSelect={handleSelectArticle} isCompact={true} />
                    ))}
                 </div>
             </div>
