@@ -6,9 +6,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  // Auth calls go to Vercel serverless functions (same domain, relative path)
-  // In dev, Vite proxies /api/auth/* → localhost:3001
-  const AUTH_BASE = '';
+  // Auth calls go to Render backend (same backend that serves articles)
+  const AUTH_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   // Load token from localStorage on mount
   useEffect(() => {
