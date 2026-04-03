@@ -19,6 +19,8 @@
     "express": "^5.2.1",
     "google-trends-api": "^4.9.2",
     "node-cron": "^4.2.1",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.20.0",
     "rss-parser": "^3.13.0",
     "stopword": "^3.1.5",

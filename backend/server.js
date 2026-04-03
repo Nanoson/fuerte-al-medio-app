@@ -9,6 +9,8 @@ const { groupArticles } = require('./clustering');
 const { neutralizeArticles, neutralizeTrends } = require('./neutralizer');
 const { fetchMarkets } = require('./markets');
 const { fetchSocialTrends } = require('./trends');
+const auth = require('./auth');
+const users = require('./users');
 
 const Parser = require('rss-parser');
 const rssParser = new Parser();
@@ -492,6 +494,59 @@ app.get('/api/debug-scraper', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.response ? e.response.data : e.message });
     }
+});
+
+// ---------------------------------------------------
+// PHASE 1: AUTHENTICATION & USER MANAGEMENT
+// ---------------------------------------------------
+
+// AUTH ENDPOINTS
+app.post('/api/auth/signup', async (req, res) => {
+    const { email, password, username } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+    try {
+        const result = await auth.signup(email, password, username);
+        if (result.success) res.json(result);
+        else res.status(400).json(result);
+    } catch (err) {
+        console.error('Signup endpoint error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+    const result = await auth.login(email, password);
+    if (result.success) res.json(result);
+    else res.status(401).json(result);
+});
+
+app.post('/api/auth/logout', auth.authenticateToken, (req, res) => {
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
+app.get('/api/auth/profile', auth.authenticateToken, async (req, res) => {
+    const user = await users.getUserProfile(req.user.id);
+    if (user) res.json(user);
+    else res.status(404).json({ error: 'User not found' });
+});
+
+app.get('/api/user/fam-balance', auth.authenticateToken, async (req, res) => {
+    const balance = await users.getFamBalance(req.user.id);
+    res.json({ balance });
+});
+
+app.get('/api/user/profile/:username', async (req, res) => {
+    const user = await users.getPublicUserProfile(req.params.username);
+    if (user) res.json(user);
+    else res.status(404).json({ error: 'User not found' });
+});
+
+app.put('/api/user/profile', auth.authenticateToken, async (req, res) => {
+    const updated = await users.updateUserProfile(req.user.id, req.body);
+    if (updated) res.json(updated);
+    else res.status(500).json({ error: 'Failed to update profile' });
 });
 
 const PORT = process.env.PORT || 3001;

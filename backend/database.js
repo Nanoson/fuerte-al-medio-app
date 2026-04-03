@@ -41,7 +41,32 @@ pool.query(`
 .then(() => {
     console.log('✅ Conectado a la Base de Datos Histórica en la Nube (PostgreSQL Neon).');
     console.log('✅ Esquema V5 (Medios Visuales y Copete) estabilizado.');
+    // Phase 1 Social tables
+    return pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            username TEXT,
+            password_hash TEXT,
+            role TEXT DEFAULT 'user',
+            profile_public JSONB DEFAULT '{}',
+            reputation_score INTEGER DEFAULT 0,
+            prediction_accuracy DECIMAL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
 })
+.then(() => pool.query(`
+    CREATE TABLE IF NOT EXISTS fam_credits (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        balance INTEGER DEFAULT 5,
+        earned_from TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`))
+.then(() => console.log('✅ Tablas sociales (users, fam_credits) listas.'))
 .catch(err => {
     console.error('Error al verificar tabla PG:', err);
 });
