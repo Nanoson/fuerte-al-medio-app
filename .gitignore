@@ -27,6 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+.env.vercel
 *.db
 *.db-journal
 fuertealmedio.db
@@ -35,3 +36,4 @@ fuertealmedio.db
 video_maker/
 *.mp4
 *.mp3
+.vercel

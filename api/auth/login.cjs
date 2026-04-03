@@ -1,4 +1,4 @@
-const { getPool, ensureTables, signToken, verifyToken, bcrypt } = require('../_lib');
+const { getPool, ensureTables, signToken, verifyToken, bcrypt } = require('../_lib.cjs');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
