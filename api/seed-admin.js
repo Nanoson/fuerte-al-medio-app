@@ -1,8 +1,8 @@
 // One-time seed endpoint to create the admin user
 // Accessible at: /api/seed-admin
-const { getPool, ensureTables, generateId, signToken, bcrypt } = require('./_lib.cjs');
+import { getPool, ensureTables, generateId, signToken, bcrypt } from './_lib.js';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const pool = getPool();
@@ -40,4 +40,4 @@ module.exports = async (req, res) => {
   } finally {
     await pool.end();
   }
-};
+}

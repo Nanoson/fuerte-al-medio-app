@@ -1,11 +1,12 @@
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+import pg from 'pg';
+import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
+const { Pool } = pg;
 const JWT_SECRET = process.env.JWT_SECRET || 'fuerte-al-medio-dev-secret-key-2026';
 
-function getPool() {
+export function getPool() {
   return new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
@@ -15,7 +16,7 @@ function getPool() {
   });
 }
 
-async function ensureTables(pool) {
+export async function ensureTables(pool) {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -60,15 +61,15 @@ async function ensureTables(pool) {
   `);
 }
 
-function generateId() {
-  return crypto.randomUUID();
+export function generateId() {
+  return randomUUID();
 }
 
-function signToken(userId, email) {
+export function signToken(userId, email) {
   return jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '30d' });
 }
 
-function verifyToken(token) {
+export function verifyToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch {
@@ -76,4 +77,4 @@ function verifyToken(token) {
   }
 }
 
-module.exports = { getPool, ensureTables, generateId, signToken, verifyToken, bcrypt };
+export const bcrypt = bcryptjs;
