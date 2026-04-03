@@ -1,0 +1,232 @@
+.reaction-bar {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+.reaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.reaction-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.total-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+.reaction-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.reaction-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 80px;
+}
+
+.reaction-btn:hover:not(:disabled) {
+  background: var(--brand-color);
+  color: white;
+  border-color: var(--brand-color);
+  transform: scale(1.05);
+}
+
+.reaction-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.reaction-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.reaction-count {
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.reaction-btn.active .reaction-count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Compact version */
+.reaction-bar-compact {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.reaction-summary {
+  flex-shrink: 0;
+}
+
+.reaction-buttons-compact {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.reaction-btn-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+}
+
+.reaction-btn-compact:hover:not(:disabled) {
+  border-color: var(--brand-color);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.reaction-btn-compact.active {
+  background: var(--brand-color);
+  color: white;
+  border-color: var(--brand-color);
+}
+
+.reaction-btn-compact .emoji {
+  font-size: 1.1rem;
+}
+
+.reaction-btn-compact .count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+}
+
+.reaction-btn-compact.active .count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Breakdown visualization */
+.reaction-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.reaction-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reaction-stat .emoji {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-hover);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.percentage {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 35px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .reaction-bar {
+    padding: 1rem;
+  }
+
+  .reaction-buttons {
+    gap: 0.5rem;
+  }
+
+  .reaction-btn {
+    flex: 0 1 calc(50% - 0.25rem);
+    min-width: 60px;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .reaction-btn-compact {
+    flex: 0 1 auto;
+  }
+
+  .reaction-bar-compact {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reaction-buttons-compact {
+    width: 100%;
+  }
+}

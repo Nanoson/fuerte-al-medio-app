@@ -1,0 +1,125 @@
+.sidebar {
+  width: 320px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-header {
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-color);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  color: var(--text-main);
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.tab-button.active {
+  color: #4CAF50;
+  border-bottom-color: #4CAF50;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.sidebar-content h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.trending-container,
+.leaderboard-container {
+  min-height: 200px;
+}
+
+.sidebar-fam-info {
+  padding: 1rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border-top: 1px solid var(--border-color);
+}
+
+.fam-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #4CAF50;
+}
+
+.fam-icon {
+  font-size: 1.5rem;
+}
+
+.fam-text {
+  flex: 1;
+}
+
+.fam-label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.fam-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #558b2f;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 100%;
+    position: relative;
+    top: 0;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Scrollbar styling */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

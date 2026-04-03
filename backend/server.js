@@ -1,14 +1,17 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
 const db = require('./database');
-require('dotenv').config();
 
 const { fetchAllNews, scrapeArticleBody } = require('./scraper');
 const { groupArticles } = require('./clustering');
 const { neutralizeArticles, neutralizeTrends } = require('./neutralizer');
 const { fetchMarkets } = require('./markets');
 const { fetchSocialTrends } = require('./trends');
+const twitterBot = require('./twitter');
+const mentionsHandler = require('./mentions');
 
 const Parser = require('rss-parser');
 const rssParser = new Parser();
@@ -458,6 +461,51 @@ app.get('/api/force-scrape', async (req, res) => {
 });
 
 // ---------------------------------------------------
+// FASE 80: TWITTER AUTOMATION - PUBLISHING SCHEDULE
+// Times are in UTC. Adjust cron expressions if server timezone differs.
+// Target times (Argentina UTC-3): 9am, 1pm, 6pm, 10pm
+// ---------------------------------------------------
+
+// 09:00 AR (12:00 UTC) → Publish morning edition
+cron.schedule('15 12 * * *', () => {
+    console.log('🐦 Twitter: Morning publication cycle');
+    twitterBot.publishDailyArticles();
+});
+
+// 13:00 AR (16:00 UTC) → Publish afternoon edition
+cron.schedule('45 15 * * *', () => {
+    console.log('🐦 Twitter: Afternoon publication cycle');
+    twitterBot.publishDailyArticles();
+});
+
+// 18:00 AR (21:00 UTC) → Publish evening edition
+cron.schedule('20 21 * * *', () => {
+    console.log('🐦 Twitter: Evening publication cycle');
+    twitterBot.publishDailyArticles();
+});
+
+// 22:00 AR (01:00 UTC) → Publish night edition
+cron.schedule('50 0 * * *', () => {
+    console.log('🐦 Twitter: Night publication cycle');
+    twitterBot.publishDailyArticles();
+});
+
+// Update tweet metrics every 30 minutes
+cron.schedule('*/30 * * * *', async () => {
+    try {
+        const { rows } = await db.query(
+            `SELECT tweet_id FROM twitter_posts WHERE posted_at >= NOW() - INTERVAL '7 days' ORDER BY posted_at DESC LIMIT 20`
+        );
+
+        for (let row of rows) {
+            await twitterBot.updateTweetMetrics(row.tweet_id);
+        }
+    } catch (error) {
+        console.error('Error updating metrics:', error.message);
+    }
+});
+
+// ---------------------------------------------------
 // FASE 65: ENDPOINT DE DIAGNÓSTICO EN VIVO (TRANSPARENCIA CLOUD)
 // ---------------------------------------------------
 app.get('/api/debug-scraper', async (req, res) => {
@@ -467,12 +515,329 @@ app.get('/api/debug-scraper', async (req, res) => {
         if (!process.env.GEMINI_API_KEY) {
             return res.json({ error: "No hay GEMINI_API_KEY configurada en el servidor en la nube." });
         }
-        
+
         const response = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
         res.json({ success: true, list: response.data });
     } catch (e) {
         res.status(500).json({ error: "Crash cataclísmico en servidor:", detail: e.response ? e.response.data : e.message });
     }
+});
+
+// ---------------------------------------------------
+// PHASE 1: AUTHENTICATION & USER MANAGEMENT
+// ---------------------------------------------------
+
+const auth = require('./auth');
+const users = require('./users');
+const reactions = require('./reactions');
+const shares = require('./shares');
+
+// AUTH ENDPOINTS
+app.post('/api/auth/signup', async (req, res) => {
+    const { email, password, username } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    try {
+        const result = await auth.signup(email, password, username);
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (err) {
+        console.error('Signup endpoint error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    const result = await auth.login(email, password);
+
+    if (result.success) {
+        res.json(result);
+    } else {
+        res.status(401).json(result);
+    }
+});
+
+app.post('/api/auth/logout', auth.authenticateToken, (req, res) => {
+    // Token-based auth - logout is client-side (delete token)
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
+app.get('/api/auth/profile', auth.authenticateToken, async (req, res) => {
+    const user = await users.getUserProfile(req.user.id);
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).json({ error: 'User not found' });
+    }
+});
+
+// ---------------------------------------------------
+// PHASE 1: USER PROFILE & REPUTATION
+// ---------------------------------------------------
+
+app.get('/api/user/profile/:username', async (req, res) => {
+    const user = await users.getPublicUserProfile(req.params.username);
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).json({ error: 'User not found' });
+    }
+});
+
+app.put('/api/user/profile', auth.authenticateToken, async (req, res) => {
+    const updated = await users.updateUserProfile(req.user.id, req.body);
+    if (updated) {
+        res.json(updated);
+    } else {
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+app.get('/api/user/leaderboard', async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+    const leaderboard = await users.getTopPredictors(limit, offset);
+    res.json(leaderboard);
+});
+
+app.post('/api/user/claim-daily-credit', auth.authenticateToken, async (req, res) => {
+    const result = await users.claimDailyCredit(req.user.id);
+    res.json(result);
+});
+
+app.get('/api/user/fam-balance', auth.authenticateToken, async (req, res) => {
+    const balance = await users.getFamBalance(req.user.id);
+    res.json({ balance });
+});
+
+// ---------------------------------------------------
+// PHASE 1: REACTIONS (EMOJI REACTIONS ON ARTICLES)
+// ---------------------------------------------------
+
+app.post('/api/articles/:id/react', auth.optionalAuth, async (req, res) => {
+    const { reactionType } = req.body;
+
+    if (!reactionType) {
+        return res.status(400).json({ error: 'Reaction type required' });
+    }
+
+    if (!req.user) {
+        return res.status(401).json({ error: 'User required for reactions' });
+    }
+
+    const result = await reactions.addReaction(parseInt(req.params.id), req.user.id, reactionType);
+    res.json(result);
+});
+
+app.delete('/api/articles/:id/react', auth.authenticateToken, async (req, res) => {
+    const result = await reactions.removeReaction(parseInt(req.params.id), req.user.id);
+    res.json(result);
+});
+
+app.get('/api/articles/:id/reactions', async (req, res) => {
+    const result = await reactions.getArticleReactions(parseInt(req.params.id));
+    res.json(result);
+});
+
+app.get('/api/articles/:id/my-reaction', auth.optionalAuth, async (req, res) => {
+    if (!req.user) {
+        return res.json({ reaction: null });
+    }
+
+    const reaction = await reactions.getUserReaction(parseInt(req.params.id), req.user.id);
+    res.json({ reaction });
+});
+
+app.get('/api/trending/reactions', async (req, res) => {
+    const limit = parseInt(req.query.limit) || 20;
+    const hours = parseInt(req.query.hours) || 24;
+    const trending = await reactions.getTrendingReactions(limit, hours);
+    res.json(trending);
+});
+
+// ---------------------------------------------------
+// PHASE 1: SHARES TRACKING
+// ---------------------------------------------------
+
+app.post('/api/articles/:id/share', auth.optionalAuth, async (req, res) => {
+    const { platform } = req.body;
+
+    if (!platform) {
+        return res.status(400).json({ error: 'Platform required' });
+    }
+
+    const result = await shares.recordShare(
+        parseInt(req.params.id),
+        req.user?.id || null,
+        platform
+    );
+
+    res.json(result);
+});
+
+app.get('/api/articles/:id/shares', async (req, res) => {
+    const count = await shares.getShareCount(parseInt(req.params.id));
+    const breakdown = await shares.getShareBreakdown(parseInt(req.params.id));
+    res.json({ count, breakdown });
+});
+
+app.get('/api/trending/shares', async (req, res) => {
+    const limit = parseInt(req.query.limit) || 20;
+    const hours = parseInt(req.query.hours) || 24;
+    const trending = await shares.getTrendingShares(limit, hours);
+    res.json(trending);
+});
+
+app.get('/api/user/shares', auth.authenticateToken, async (req, res) => {
+    const limit = parseInt(req.query.limit) || 100;
+    const userShares = await shares.getUserShares(req.user.id, limit);
+    res.json(userShares);
+});
+
+// ---------------------------------------------------
+// TWITTER API ENDPOINTS
+// ---------------------------------------------------
+
+// Manual trigger for Twitter publishing (for testing)
+app.get('/api/twitter/publish', async (req, res) => {
+    console.log('🐦 Manual Twitter publish triggered');
+    twitterBot.publishDailyArticles();
+    res.json({ success: true, message: 'Publishing cycle initiated' });
+});
+
+// Get Twitter posting stats
+app.get('/api/twitter/stats', async (req, res) => {
+    try {
+        const stats = await db.query(`
+            SELECT
+                COUNT(*) as total_posts,
+                SUM(likes) as total_likes,
+                SUM(retweets) as total_retweets,
+                SUM(replies) as total_replies,
+                ROUND(AVG(likes), 1) as avg_likes,
+                ROUND(AVG(retweets), 1) as avg_retweets,
+                MAX(posted_at) as last_posted
+            FROM twitter_posts
+        `);
+
+        const recentPosts = await db.query(`
+            SELECT
+                tp.id, tp.tweet_text, tp.posted_at, tp.likes, tp.retweets, tp.replies,
+                a.title, a.category,
+                tp.trending_matched
+            FROM twitter_posts tp
+            LEFT JOIN articles a ON tp.article_id = a.id
+            ORDER BY tp.posted_at DESC
+            LIMIT 10
+        `);
+
+        res.json({
+            stats: stats.rows[0],
+            recent: recentPosts.rows
+        });
+    } catch (error) {
+        console.error('Error fetching Twitter stats:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get Twitter posting history with details
+app.get('/api/twitter/history', async (req, res) => {
+    try {
+        const { days = 7 } = req.query;
+
+        const history = await db.query(`
+            SELECT
+                tp.id, tp.tweet_id, tp.tweet_text, tp.posted_at,
+                tp.likes, tp.retweets, tp.replies,
+                a.id as article_id, a.title, a.category,
+                tp.trending_matched
+            FROM twitter_posts tp
+            LEFT JOIN articles a ON tp.article_id = a.id
+            WHERE tp.posted_at >= NOW() - INTERVAL '${parseInt(days)} days'
+            ORDER BY tp.posted_at DESC
+        `);
+
+        res.json({
+            posts: history.rows,
+            total: history.rows.length,
+            period_days: parseInt(days)
+        });
+    } catch (error) {
+        console.error('Error fetching Twitter history:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ---------------------------------------------------
+// TWITTER ENGAGEMENT APPROVAL DASHBOARD
+// ---------------------------------------------------
+
+// Get pending replies awaiting user approval
+app.get('/api/twitter/pending-replies', async (req, res) => {
+    try {
+        const pending = await mentionsHandler.getPendingReplies();
+        res.json({
+            pending: pending,
+            total: pending.length
+        });
+    } catch (error) {
+        console.error('Error fetching pending replies:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Approve a pending reply and post it
+app.post('/api/twitter/approve-reply/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await mentionsHandler.approvePendingReply(id, twitterBot);
+
+        if (result.success) {
+            res.json({ success: true, message: 'Reply approved and posted', tweetId: result.tweetId });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (error) {
+        console.error('Error approving reply:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Reject a pending reply
+app.post('/api/twitter/reject-reply/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await mentionsHandler.rejectPendingReply(id);
+
+        if (result.success) {
+            res.json({ success: true, message: 'Reply rejected' });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (error) {
+        console.error('Error rejecting reply:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Manually trigger trending engagement check
+app.get('/api/twitter/check-trends', async (req, res) => {
+    console.log('🔥 Manual trending engagement check triggered');
+    mentionsHandler.engageWithTrends();
+    res.json({ success: true, message: 'Trending engagement check initiated' });
 });
 
 const PORT = process.env.PORT || 3001;

@@ -13,14 +13,17 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.6",
+    "bcrypt": "^5.1.1",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "google-trends-api": "^4.9.2",
+    "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.2.1",
     "pg": "^8.20.0",
     "rss-parser": "^3.13.0",
+    "sqlite3": "^5.1.7",
     "stopword": "^3.1.5",
     "string-similarity": "^4.0.4",
     "yahoo-finance2": "^3.13.2"

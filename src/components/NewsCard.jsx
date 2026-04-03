@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authors } from '../data/authors.js';
 import AuthorAvatar from './AuthorAvatar';
+import ReactionBar from './ReactionBar';
+import ShareButtons from './ShareButtons';
 
 const renderBoldText = (text) => {
     if (!text) return null;
@@ -554,7 +556,20 @@ const NewsCard = ({ article, isFullView, onSelect, isHero, isCompact, onCategory
             )}
           </div>
 
-          <div style={{padding: '2.5rem 0', borderTop: '2px solid var(--border-color)'}}>
+          {/* PHASE 1: REACTIONS & SHARES */}
+          <div style={{padding: '2rem 0', borderTop: '2px solid var(--border-color)', borderBottom: '2px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '2rem'}}>
+            <div>
+              <h4 style={{fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)'}}>¿Qué te pareció?</h4>
+              <ReactionBar articleId={article.id} />
+            </div>
+
+            <div>
+              <h4 style={{fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)'}}>Compartir en Redes</h4>
+              <ShareButtons articleId={article.id} articleTitle={article.title} />
+            </div>
+          </div>
+
+          <div style={{padding: '2.5rem 0'}}>
               <h3 style={{fontFamily: 'var(--font-display)', marginBottom: '2rem', fontSize: '1.6rem'}}>Comentarios y Refutaciones ({comments.length})</h3>
               {!replyingTo && renderCommentForm(false)}
               {comments.length === 0 && <span style={{fontSize: '1.1rem', color: '#666', fontStyle: 'italic'}}>Nadie ha iniciado el debate todavía.</span>}

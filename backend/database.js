@@ -12,6 +12,7 @@ pool.on('error', (err) => {
     process.exit(-1);
 });
 
+// Original articles table
 pool.query(`
     CREATE TABLE IF NOT EXISTS articles (
         id SERIAL PRIMARY KEY,
@@ -45,5 +46,59 @@ pool.query(`
 .catch(err => {
     console.error('Error al verificar tabla PG:', err);
 });
+
+// Phase 1: Users table
+pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        username TEXT,
+        password_hash TEXT,
+        profile_public JSONB DEFAULT '{}',
+        reputation_score INTEGER DEFAULT 0,
+        prediction_accuracy DECIMAL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`).then(() => console.log('✅ Users table ready.'))
+  .catch(err => console.error('Error creating users table:', err));
+
+// Phase 1: FAM Credits table
+pool.query(`
+    CREATE TABLE IF NOT EXISTS fam_credits (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        balance INTEGER DEFAULT 5,
+        earned_from TEXT,
+        transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`).then(() => console.log('✅ FAM credits table ready.'))
+  .catch(err => console.error('Error creating fam_credits table:', err));
+
+// Phase 1: Reactions table
+pool.query(`
+    CREATE TABLE IF NOT EXISTS reactions (
+        id TEXT PRIMARY KEY,
+        article_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        reaction_type TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(article_id, user_id)
+    )
+`).then(() => console.log('✅ Reactions table ready.'))
+  .catch(err => console.error('Error creating reactions table:', err));
+
+// Phase 1: Shares table
+pool.query(`
+    CREATE TABLE IF NOT EXISTS shares (
+        id TEXT PRIMARY KEY,
+        article_id TEXT NOT NULL,
+        user_id TEXT,
+        platform TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`).then(() => console.log('✅ Shares table ready.'))
+  .catch(err => console.error('Error creating shares table:', err));
 
 module.exports = pool;

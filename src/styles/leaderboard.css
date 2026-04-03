@@ -1,0 +1,338 @@
+.leaderboard {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.leaderboard-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.leaderboard-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.timeframe-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.timeframe-select:hover {
+  border-color: var(--brand-color);
+}
+
+.timeframe-select:focus {
+  outline: none;
+  border-color: var(--brand-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.leaderboard-table-wrapper {
+  overflow-x: auto;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.leaderboard-table thead {
+  background: var(--bg-hover);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.leaderboard-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.leaderboard-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.leaderboard-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+/* Special styling for top 3 */
+.leaderboard-table tbody tr.rank-1,
+.leaderboard-table tbody tr.rank-2,
+.leaderboard-table tbody tr.rank-3 {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+  font-weight: 500;
+}
+
+.leaderboard-table tbody tr.rank-1 {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
+}
+
+.leaderboard-table tbody tr.rank-2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, transparent 100%);
+}
+
+.leaderboard-table tbody tr.rank-3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, transparent 100%);
+}
+
+.rank {
+  width: 80px;
+  text-align: center;
+}
+
+.medal {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.rank-num {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user {
+  flex: 1;
+  min-width: 200px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.accuracy {
+  text-align: center;
+  min-width: 120px;
+}
+
+.accuracy-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.reputation {
+  text-align: center;
+  min-width: 120px;
+}
+
+.reputation-score {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.leaderboard-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.leaderboard-empty p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.leaderboard-footer {
+  padding: 1rem 1.5rem;
+  background: var(--bg-hover);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.footer-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.leaderboard-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* Compact version */
+.leaderboard-compact {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.leaderboard-compact h3 {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.leaderboard-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leaderboard-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.leaderboard-item-compact:hover {
+  background: var(--bg-hover);
+}
+
+.leaderboard-item-compact .position {
+  font-size: 1.2rem;
+  width: 30px;
+  text-align: center;
+}
+
+.leaderboard-item-compact .username {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.leaderboard-item-compact .accuracy {
+  font-weight: 700;
+  color: var(--brand-color);
+  font-size: 0.9rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .leaderboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+
+  .leaderboard-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .leaderboard-controls {
+    width: 100%;
+  }
+
+  .timeframe-select {
+    flex: 1;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .rank {
+    width: 60px;
+  }
+
+  .medal {
+    font-size: 1.2rem;
+  }
+
+  .user-info {
+    gap: 0.5rem;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .username {
+    font-size: 0.85rem;
+  }
+
+  .accuracy-badge,
+  .reputation-score {
+    font-size: 0.8rem;
+  }
+
+  .leaderboard-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .leaderboard-table tbody tr.rank-1,
+  .leaderboard-table tbody tr.rank-2,
+  .leaderboard-table tbody tr.rank-3 {
+    background: none;
+  }
+
+  .leaderboard-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

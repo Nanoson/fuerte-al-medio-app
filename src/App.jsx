@@ -9,7 +9,10 @@ import MarketsWidget from './components/MarketsWidget'
 import AuthorAvatar from './components/AuthorAvatar'
 import FeedbackWidget from './components/FeedbackWidget'
 import Dashboard from './components/Dashboard'
+import LoginForm from './components/LoginForm'
+import Sidebar from './components/Sidebar'
 import { authors } from './data/authors.js'
+import { useAuth } from './context/AuthContext'
 
 // ==========================================
 // MÓDULOS DE PROCESAMIENTO ESTÁTICO GLOBAL
@@ -56,11 +59,13 @@ const stabilizeImages = (newsArray) => {
 };
 
 function App() {
+  const { user, logout } = useAuth()
   const [activeCategory, setActiveCategory] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [news, setNews] = useState([])
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [selectedAuthor, setSelectedAuthor] = useState(null)
+  const [showLoginForm, setShowLoginForm] = useState(false)
   const [showDashboard, setShowDashboard] = useState(() => {
       return typeof window !== 'undefined' && window.location.search.includes('admin=true');
   })
@@ -511,12 +516,15 @@ function App() {
 
   return (
     <div className="app-container">
-      <Header 
-        activeCategory={activeCategory} 
+      <Header
+        activeCategory={activeCategory}
         setActiveCategory={handleCategorySelect}
         onHome={handleHomeClick}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
+        user={user}
+        onLogin={() => setShowLoginForm(true)}
+        onLogout={logout}
       />
       
       {!selectedArticle && (
@@ -531,27 +539,36 @@ function App() {
         </div>
       )}
       
-      <main className="content">
-        {showDashboard ? (
-             <Dashboard 
-                 onBack={() => setShowDashboard(false)} 
-                 onSelectArticle={(id) => { setShowDashboard(false); handleSelectArticle(id); }}
-                 onAuthorSelect={(id) => { setShowDashboard(false); handleAuthorSelect(id); }}
-             />
-        ) : selectedArticle ? renderSingleArticle() : (
-            <>
-                {activeCategory === 'Mercados' && <MarketsWidget />}
-                {(!activeCategory || activeCategory !== 'Mercados' || filteredByCategory.length > 0) ? renderFeed() : null}
-            </>
-        )}
-      </main>
+      <div style={{display: 'flex', gap: '2rem', maxWidth: '1400px', margin: '0 auto'}}>
+        <main className="content" style={{flex: 1}}>
+          {showDashboard ? (
+               <Dashboard
+                   onBack={() => setShowDashboard(false)}
+                   onSelectArticle={(id) => { setShowDashboard(false); handleSelectArticle(id); }}
+                   onAuthorSelect={(id) => { setShowDashboard(false); handleAuthorSelect(id); }}
+               />
+          ) : selectedArticle ? renderSingleArticle() : (
+              <>
+                  {activeCategory === 'Mercados' && <MarketsWidget />}
+                  {(!activeCategory || activeCategory !== 'Mercados' || filteredByCategory.length > 0) ? renderFeed() : null}
+              </>
+          )}
+        </main>
+
+        {!showDashboard && !selectedArticle && <Sidebar />}
+      </div>
 
       {/* Widget Global Flotante */}
       {!showDashboard && !(selectedArticle && selectedArticle.category === 'OPINIONES DE LECTORES') && (
-          <FeedbackWidget 
-              currentContextId={selectedArticle?.id} 
-              currentContextTitle={selectedArticle?.title} 
+          <FeedbackWidget
+              currentContextId={selectedArticle?.id}
+              currentContextTitle={selectedArticle?.title}
           />
+      )}
+
+      {/* Login Form Modal */}
+      {showLoginForm && (
+        <LoginForm onClose={() => setShowLoginForm(false)} />
       )}
     </div>
   )

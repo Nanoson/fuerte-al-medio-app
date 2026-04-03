@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDarkMode }) => {
+const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDarkMode, user, onLogin, onLogout }) => {
   const [weather, setWeather] = useState({ temp: '--', condition: '' });
 
   useEffect(() => {
@@ -35,19 +35,64 @@ const Header = ({ activeCategory, setActiveCategory, onHome, isDarkMode, setIsDa
           <span className="header-meta-text">{displayDate}</span>
           <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
               <span className="header-meta-text">📍 Buenos Aires | ⛅ {weather.temp}{weather.condition}</span>
-              <button 
-                  onClick={() => setIsDarkMode(!isDarkMode)} 
+
+              {user && (
+                <span className="header-meta-text" style={{marginLeft: '1rem', color: '#4CAF50', fontWeight: 600}}>
+                  👤 {user.username} | 💰 {user.fam_balance || 5}
+                </span>
+              )}
+
+              {user ? (
+                <button
+                  onClick={onLogout}
+                  title="Logout"
+                  style={{
+                    background: '#ff5252',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    padding: '0.35rem 0.8rem',
+                    fontWeight: 600,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={onLogin}
+                  title="Login"
+                  style={{
+                    background: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    padding: '0.35rem 0.8rem',
+                    fontWeight: 600,
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  Login / Sign Up
+                </button>
+              )}
+
+              <button
+                  onClick={() => setIsDarkMode(!isDarkMode)}
                   title={isDarkMode ? "Activar Modo Diurno" : "Activar Modo Nocturno"}
                   style={{
-                    background: 'var(--card-bg)', 
+                    background: 'var(--card-bg)',
                     color: 'var(--text-main)',
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: '20px', 
-                    cursor: 'pointer', 
-                    fontSize: '1.1rem', 
-                    padding: '0.2rem 0.6rem', 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontSize: '1.1rem',
+                    padding: '0.2rem 0.6rem',
+                    display: 'flex',
+                    alignItems: 'center',
                     transition: 'all 0.2s',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                   }}
